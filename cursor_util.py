@@ -8,7 +8,7 @@ import cur_format
 import xcur_format
 from xml.etree import ElementTree
 
-DEFAULT_SIZES = [(24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
+DEFAULT_SIZES = [(24, 24), (32, 32), (48, 48), (64, 64), (128, 128)]
 MAX_DEFAULT_SIZE = DEFAULT_SIZES[-1]
 
 def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:

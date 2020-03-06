@@ -68,7 +68,7 @@ class Cursor:
                 self.add(CursorIcon(new_cur, int(new_hx), int(new_hy)))
 
     def remove_non_square_sizes(self):
-        for size in self:
+        for size in list(self):
             if(size[0] != size[1]):
                 del self[size]
 

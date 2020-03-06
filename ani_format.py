@@ -133,10 +133,12 @@ class AniFormat(AnimatedCursorStorageFormat):
 
         for idx, rate in zip(ani_data["seq"], ani_data["rate"]):
             # We have to convert the rate to milliseconds. Normally stored in jiffies(1/60ths of a second)
-            ani_cur.append((ani_data["list"][idx], (rate * 1000) / 60))
+            ani_cur.append((ani_data["list"][idx], int((rate * 1000) / 60)))
 
         return ani_cur
 
+
+    DEF_CURSOR_SIZE = (32, 32)
 
     @classmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
@@ -152,8 +154,7 @@ class AniFormat(AnimatedCursorStorageFormat):
         header[0:4] = to_bytes(36, 4)  # Header length...
         header[4:8] = to_bytes(len(cursor), 4)  # Number of frames
         header[8:12] = to_bytes(len(cursor), 4)  # Number of steps
-        # Ignore width, height, and bit count.
-        header[24:28] = to_bytes(1, 4)  # We have to write the number of planes...
+        # Ignore width, height, bit count, and number of planes....
         header[28:32] = to_bytes(10, 4)  # We just pass 10 as the default delay...
         header[32:36] = to_bytes(1, 4)  # The flags, we just want the last flag flipped which states if data is stored in .cur...
 
@@ -174,7 +175,7 @@ class AniFormat(AnimatedCursorStorageFormat):
             list_data.extend(to_bytes(len(cur_data), 4))
             list_data.extend(cur_data)
             # Writing the delay to the rate chunk
-            delay_data.extend(to_bytes(int((delay * 60) / 1000), 4))
+            delay_data.extend(to_bytes(round((delay * 60) / 1000), 4))
 
         # Now that we have gathered the data actually write the chunks...
         write_chunk(out, b"LIST", list_data)

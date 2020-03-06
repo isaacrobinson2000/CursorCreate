@@ -83,6 +83,9 @@ class CurFormat(CursorStorageFormat):
         for size in cursor:
             width, height = size
 
+            if(width > 256 or height > 256):
+                continue
+
             hot_x, hot_y = cursor[size].hotspot
             hot_x, hot_y = hot_x if (0 <= hot_x < width) else 0, hot_y if(0 <= hot_y < height) else 0
 
