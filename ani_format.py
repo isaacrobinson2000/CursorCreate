@@ -4,14 +4,17 @@ from format_core import AnimatedCursorStorageFormat, to_int, to_bytes
 from PIL import BmpImagePlugin
 from cur_format import CurFormat
 from cursor import CursorIcon, Cursor, AnimatedCursor
+import copy
 
 
 # UTILITY METHODS:
 
 
-def read_chunks(buffer: BinaryIO, skip_chunks: Set[str]=None, byteorder="little") -> Iterator[Tuple[bytes, int, bytes]]:
+def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes]=None, list_chunks: Set[bytes]=None, byteorder="little") -> Iterator[Tuple[bytes, int, bytes]]:
     if(skip_chunks is None):
         skip_chunks = set()
+    if(list_chunks is None):
+        list_chunks = set()
 
     while(True):
         next_id = buffer.read(4)
@@ -21,6 +24,11 @@ def read_chunks(buffer: BinaryIO, skip_chunks: Set[str]=None, byteorder="little"
             continue
 
         size = to_int(buffer.read(4), byteorder=byteorder)
+
+        if(next_id in list_chunks):
+            yield from read_chunks(BytesIO(buffer.read(size)), skip_chunks, list_chunks, byteorder)
+            continue
+
         yield (next_id, size, buffer.read(size))
 
 
@@ -54,31 +62,26 @@ def _header_chunk(header: None, data: bytes, data_out: Dict[str, Any]):
     data_out["rate"] = [h_data["display_rate"]] * h_data["num_steps"]
 
 
-def _list_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
+def _icon_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     if(header is None):
-        raise SyntaxError("LIST chunk became before header!")
+        raise SyntaxError("icon chunk became before header!")
 
-    if(data[:4] != b"fram"):
-        raise SyntaxError("LIST chunk should start with 'fram'!")
+    if(header["is_in_ico"]):
+        # Cursors are stored as either .cur or .ico, use CurFormat to read them...
+        cursor = CurFormat.read(BytesIO(data))
+    else:
+        # BMP format, load in and then correct the height...
+        c_icon = CursorIcon(BmpImagePlugin.DibImageFile(BytesIO(data)), 0, 0)
+        c_icon.image._size = (c_icon.image.size[0], c_icon.image.size[1] // 2)
+        d, e, o, a = c_icon.image.tile[0]
+        c_icon.image.tile[0] = d, (0, 0) + c_icon.image.size, o, a
+        # Add the image to the cursor list...
+        cursor = Cursor([c_icon])
 
-    data = data[4:]
-    cursor_list = []
+    if("list" not in data_out):
+        data_out["list"] = []
 
-    for chunk_id, size, chunk_data in read_chunks(BytesIO(data)):
-        if(chunk_id == b"icon"):
-            if(header["is_in_ico"]):
-                # Cursors are stored as either .cur or .ico, use CurFormat to read them...
-                cursor_list.append(CurFormat.read(BytesIO(chunk_data)))
-            else:
-                # BMP format, load in and then correct the height...
-                c_icon = CursorIcon(BmpImagePlugin.DibImageFile(BytesIO(chunk_data)), 0, 0)
-                c_icon.image._size = (c_icon.image.size[0], c_icon.image.size[1] // 2)
-                d, e, o, a = c_icon.image.tile[0]
-                c_icon.image.tile[0] = d, (0, 0) + c_icon.image.size, o, a
-                # Add the image to the cursor list...
-                cursor_list.append(Cursor([c_icon]))
-
-    data_out["list"] = cursor_list
+    data_out["list"].append(cursor)
 
 
 def _seq_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
@@ -107,7 +110,7 @@ class AniFormat(AnimatedCursorStorageFormat):
 
     CHUNKS = {
         b"anih": _header_chunk,
-        b"LIST": _list_chunk,
+        b"icon": _icon_chunk,
         b"rate": _rate_chunk,
         b"seq ": _seq_chunk
     }
@@ -125,7 +128,7 @@ class AniFormat(AnimatedCursorStorageFormat):
 
         ani_data: Dict[str, Any] = {"header": None}
 
-        for chunk_id, chunk_len, chunk_data in read_chunks(cur_file):
+        for chunk_id, chunk_len, chunk_data in read_chunks(cur_file, {b"fram"}, {b"LIST"}):
             if(chunk_id in cls.CHUNKS):
                 cls.CHUNKS[chunk_id](ani_data["header"], chunk_data, ani_data)
 
@@ -142,6 +145,15 @@ class AniFormat(AnimatedCursorStorageFormat):
 
     @classmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
+        # Normalize the cursor sizes...
+        cursor = copy.deepcopy(cursor)
+
+        cursor.normalize([cls.DEF_CURSOR_SIZE])
+        for c, d in cursor:
+            for s in list(c):
+                if(s != cls.DEF_CURSOR_SIZE):
+                    del c[s]
+
         # Write the magic...
         out.write(cls.RIFF_MAGIC)
         # We will deal with writing the length of the entire file later...
@@ -154,9 +166,11 @@ class AniFormat(AnimatedCursorStorageFormat):
         header[0:4] = to_bytes(36, 4)  # Header length...
         header[4:8] = to_bytes(len(cursor), 4)  # Number of frames
         header[8:12] = to_bytes(len(cursor), 4)  # Number of steps
-        # Ignore width, height, bit count, and number of planes....
+        # Ignore width, height, and bits per pixel...
+        # The number of planes should always be 1....
+        header[24:28] = to_bytes(1, 4)
         header[28:32] = to_bytes(10, 4)  # We just pass 10 as the default delay...
-        header[32:36] = to_bytes(1, 4)  # The flags, we just want the last flag flipped which states if data is stored in .cur...
+        header[32:36] = to_bytes(1, 4)  # The flags, last flag is flipped which specifies data is stored in .cur
 
         write_chunk(out, b"anih", header)
 
@@ -168,8 +182,8 @@ class AniFormat(AnimatedCursorStorageFormat):
             # Writing a single cursor to the list...
             mem_stream = BytesIO()
             CurFormat.write(sub_cursor, mem_stream)
-            # We write these chunks manually to avoid wasting a ton of space, as using "write_chunks" ends up being
-            # just as complicated...
+            # We write these chunks manually to avoid wasting a ton of lines of code, as using "write_chunks" ends up
+            # being just as complicated...
             cur_data = mem_stream.getvalue()
             list_data.extend(b"icon")
             list_data.extend(to_bytes(len(cur_data), 4))

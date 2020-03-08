@@ -74,13 +74,15 @@ class CurFormat(CursorStorageFormat):
         :param cursor: The cursor object to save.
         :param out: The file handle to output the cursor to.
         """
+        cursor.add_sizes([(32, 32)])
+
         out.write(cls.MAGIC)
         out.write(to_bytes(len(cursor), 2))
 
         offset = out.tell() + len(cursor) * 16
         imgs = []
 
-        for size in cursor:
+        for size in sorted(cursor):
             width, height = size
 
             if(width > 256 or height > 256):
