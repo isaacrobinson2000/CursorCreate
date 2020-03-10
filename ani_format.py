@@ -1,15 +1,16 @@
 from io import BytesIO
 from typing import BinaryIO, Iterator, Tuple, Set, Dict, Any
-from format_core import AnimatedCursorStorageFormat, to_int, to_bytes
-from PIL import BmpImagePlugin
+from format_core import AnimatedCursorStorageFormat, to_int, to_bytes, to_signed_bytes
+from PIL import BmpImagePlugin, Image
 from cur_format import CurFormat
 from cursor import CursorIcon, Cursor, AnimatedCursor
 import copy
+import numpy as np
 
+# The default dpi for BMP images written by this encoder...
+DEF_BMP_DPI = (96, 96)
 
 # UTILITY METHODS:
-
-
 def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes]=None, list_chunks: Set[bytes]=None, byteorder="little") -> Iterator[Tuple[bytes, int, bytes]]:
     if(skip_chunks is None):
         skip_chunks = set()
@@ -26,9 +27,12 @@ def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes]=None, list_chunks: Set
         size = to_int(buffer.read(4), byteorder=byteorder)
 
         if(next_id in list_chunks):
+            print(f"(entering {next_id} chunk) -> [")
             yield from read_chunks(BytesIO(buffer.read(size)), skip_chunks, list_chunks, byteorder)
+            print(f"](exiting {next_id} chunk)")
             continue
 
+        print(f"emit chunk {next_id} of size {size}")
         yield (next_id, size, buffer.read(size))
 
 
@@ -104,6 +108,34 @@ def _rate_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     data_out["rate"] = [to_int(data[i:i+4]) for i in range(0, len(data), 4)]
 
 
+def _write_bmp(img: Image.Image, out_file: BinaryIO):
+    # Grab the dpi for calculations later...
+    dpi = img.info.get("dpi", DEF_BMP_DPI)
+    ppm = tuple(int(dpi_val * 39.3701 + 0.5) for dpi_val in dpi)
+
+    # BMP HEADER:
+    out_file.write(to_bytes(40, 4)) # BMP Header size
+    out_file.write(to_signed_bytes(img.size[0], 4)) # Image Width
+    out_file.write(to_signed_bytes(img.size[1] * 2, 4)) # Image Height
+    out_file.write(to_bytes(1, 2)) # Number of planes
+    out_file.write(to_bytes(32, 2)) # The bits per pixel...
+    out_file.write(to_bytes(0, 4)) # The compression method, we set it to raw or no compression...
+    out_file.write(to_bytes(4 * img.size[0] * img.size[1], 4)) # The size of the image data...
+    out_file.write(to_signed_bytes(ppm[0], 4)) # The resolution of the width in pixels per meter...
+    out_file.write(to_signed_bytes(ppm[1], 4)) # The resolution of the height in pixels per meter...
+    out_file.write(to_bytes(0, 4)) # The number of colors in the color table, in this case none...
+    out_file.write(to_bytes(0, 4)) # Number of important colors in the color table, again none...
+
+    img = img.convert("RGBA")
+    data = np.array(img)
+    # Create the alpha channel...
+    alpha_channel = data[:, :, 3]
+    alpha_channel = alpha_channel == 0
+    # Create the main image with transparency...
+    bgrx_data = data[:, :, (2, 1, 0, 3)]
+
+
+
 class AniFormat(AnimatedCursorStorageFormat):
     RIFF_MAGIC = b"RIFF"
     ACON_MAGIC = b"ACON"
@@ -147,12 +179,8 @@ class AniFormat(AnimatedCursorStorageFormat):
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
         # Normalize the cursor sizes...
         cursor = copy.deepcopy(cursor)
-
         cursor.normalize([cls.DEF_CURSOR_SIZE])
-        for c, d in cursor:
-            for s in list(c):
-                if(s != cls.DEF_CURSOR_SIZE):
-                    del c[s]
+        cursor.remove_non_square_sizes()
 
         # Write the magic...
         out.write(cls.RIFF_MAGIC)

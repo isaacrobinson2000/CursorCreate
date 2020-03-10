@@ -82,7 +82,7 @@ class CurFormat(CursorStorageFormat):
         offset = out.tell() + len(cursor) * 16
         imgs = []
 
-        for size in sorted(cursor):
+        for size in sorted(cursor, reverse=True):
             width, height = size
 
             if(width > 256 or height > 256):
