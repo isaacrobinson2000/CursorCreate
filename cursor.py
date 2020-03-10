@@ -1,10 +1,10 @@
-from typing import List, Sequence, Tuple
+from typing import List, Sequence, Tuple, Iterable, Iterator
 from PIL import Image, ImageOps
 
 class CursorIcon:
-    def __init__(self, img: Image, hot_x, hot_y):
+    def __init__(self, img: Image, hot_x: int, hot_y: int):
         self.image: Image = img
-        self.hotspot = (hot_x, hot_y)
+        self.hotspot: Tuple[int, int] = (hot_x, hot_y)
 
 
 class Cursor:
@@ -20,30 +20,30 @@ class Cursor:
         for cursor in cursors:
             self.add(cursor)
 
-    def __getitem__(self, size):
+    def __getitem__(self, size: Tuple[int, int]) -> CursorIcon:
         return self._curs[size]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[int, int]]:
         return self._curs.__iter__()
 
-    def __contains__(self, size):
+    def __contains__(self, size: Tuple[int, int]) -> bool:
         return size in self._curs
 
-    def __delitem__(self, size):
+    def __delitem__(self, size: Tuple[int, int]):
         del self._curs[size]
 
-    def pop(self, size):
+    def pop(self, size: Tuple[int, int]) -> CursorIcon:
         cursor_icon = self._curs[size]
         del self._curs[size]
         return cursor_icon
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._curs)
 
-    def max_size(self):
+    def max_size(self) -> Tuple[int, int]:
         return max(iter(self), key=lambda s: s[0] * s[1])
 
-    def add_sizes(self, sizes):
+    def add_sizes(self, sizes: Iterable[Tuple[int, int]]):
         max_size = self.max_size()
 
         for size in sizes:
@@ -75,14 +75,14 @@ class Cursor:
 
 class AnimatedCursor(list):
     # NOTE: Delay unit is milliseconds...
-    def __init__(self, cursors=None, framerates=None):
+    def __init__(self, cursors: Iterable[Cursor]=None, framerates: Iterable[int]=None):
         framerates = framerates if(framerates is not None) else []
         cursors = cursors if(cursors is not None) else []
 
         super().__init__(self)
         self.extend(zip(cursors, framerates))
 
-    def normalize(self, init_sizes: Sequence[Tuple[int, int]] = None):
+    def normalize(self, init_sizes: Iterable[Tuple[int, int]] = None):
         if(init_sizes is None):
             init_sizes = []
 

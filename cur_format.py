@@ -1,9 +1,47 @@
 from typing import BinaryIO
 from io import BytesIO
 from PIL.IcoImagePlugin import IcoFile
-from PIL import Image
+from PIL import Image, ImageOps
 from cursor import Cursor, CursorIcon
-from format_core import CursorStorageFormat, to_bytes
+from format_core import CursorStorageFormat, to_bytes, to_signed_bytes
+import numpy as np
+
+# The default dpi for BMP images written by this encoder...
+DEF_BMP_DPI = (96, 96)
+
+def _write_bmp(img: Image.Image, out_file: BinaryIO):
+    # Grab the dpi for calculations later...
+    dpi = img.info.get("dpi", DEF_BMP_DPI)
+    ppm = tuple(int(dpi_val * 39.3701 + 0.5) for dpi_val in dpi)
+
+    # BMP HEADER:
+    out_file.write(to_bytes(40, 4)) # BMP Header size
+    out_file.write(to_signed_bytes(img.size[0], 4)) # Image Width
+    out_file.write(to_signed_bytes(img.size[1] * 2, 4)) # Image Height
+    out_file.write(to_bytes(1, 2)) # Number of planes
+    out_file.write(to_bytes(32, 2)) # The bits per pixel...
+    out_file.write(to_bytes(0, 4)) # The compression method, we set it to raw or no compression...
+    out_file.write(to_bytes(4 * img.size[0] * (img.size[1] * 2), 4)) # The size of the image data...
+    out_file.write(to_signed_bytes(ppm[0], 4)) # The resolution of the width in pixels per meter...
+    out_file.write(to_signed_bytes(ppm[1], 4)) # The resolution of the height in pixels per meter...
+    out_file.write(to_bytes(0, 4)) # The number of colors in the color table, in this case none...
+    out_file.write(to_bytes(0, 4)) # Number of important colors in the color table, again none...
+
+    img = img.convert("RGBA")
+    data = np.array(img)
+    # Create the alpha channel...
+    alpha_channel = data[:, :, 3]
+    alpha_channel = np.packbits(alpha_channel == 0, axis=1)[::-1]
+    # Create the main image with transparency...
+    bgrx_data: np.ndarray = (data[::-1, :, (2, 1, 0, 3)])
+    # Dump the main image...
+    out_file.write(bgrx_data.tobytes())
+
+    # We now dump the mask and some zeros to finish filling the space...
+    mask_data = alpha_channel.tobytes()
+    leftover_space = (img.size[0] * img.size[1] * 4) - len(mask_data)
+    out_file.write(mask_data)
+    out_file.write(bytes(leftover_space))
 
 
 class CurFormat(CursorStorageFormat):
@@ -60,10 +98,18 @@ class CurFormat(CursorStorageFormat):
 
     @classmethod
     def _to_png(cls, image: Image.Image, size) -> bytes:
-        temp = image.copy()
-        temp.thumbnail(size, Image.LANCZOS)
+        if(image.size != size):
+            raise ValueError("Size of image stored in image and cursor object don't match!!!")
         byte_io = BytesIO()
-        temp.save(byte_io, "png")
+        image.save(byte_io, "png")
+        return byte_io.getvalue()
+
+    @classmethod
+    def _to_bmp(cls, image: Image.Image, size) -> bytes:
+        if (image.size != size):
+            raise ValueError("Size of image stored in image and cursor object don't match!!!")
+        byte_io = BytesIO()
+        _write_bmp(image, byte_io)
         return byte_io.getvalue()
 
     @classmethod
@@ -82,7 +128,7 @@ class CurFormat(CursorStorageFormat):
         offset = out.tell() + len(cursor) * 16
         imgs = []
 
-        for size in sorted(cursor, reverse=True):
+        for size in sorted(cursor):
             width, height = size
 
             if(width > 256 or height > 256):
@@ -91,7 +137,7 @@ class CurFormat(CursorStorageFormat):
             hot_x, hot_y = cursor[size].hotspot
             hot_x, hot_y = hot_x if (0 <= hot_x < width) else 0, hot_y if(0 <= hot_y < height) else 0
 
-            image_data = cls._to_png(cursor[size].image, (width, height))
+            image_data = cls._to_bmp(cursor[size].image, (width, height))
 
             width, height = width if(width < 256) else 0, height if(height < 256) else 0
 
