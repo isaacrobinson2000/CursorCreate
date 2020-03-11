@@ -94,7 +94,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         img_data = np.frombuffer(buffer.read(width * height * 4), dtype=np.uint8).reshape(width, height, 4)
 
         # ARGB packed in little endian format, therefore its actually BGRA when read sequentially....
-        image = Image.fromarray(img_data[:, :, (2, 1, 0, 3)])
+        image = Image.fromarray(img_data[:, :, (2, 1, 0, 3)], "RGBA")
 
         return (image, x_hot, y_hot, delay)
 
@@ -138,6 +138,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         out_file.write(to_bytes(cls.CURSOR_TYPE, 4))
         out_file.write(to_bytes(int(img.image.size[0] * cls.SIZE_SCALING_FACTOR), 4))
         out_file.write(to_bytes(1, 4))
+
         # The width and height...
         width, height = img.image.size
         x_hot, y_hot = img.hotspot
@@ -146,10 +147,12 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         out_file.write(to_bytes(width, 4))
         out_file.write(to_bytes(width, 4))
         x_hot, y_hot = x_hot if(0 <= x_hot < width) else 0, y_hot if(0 <= y_hot < height) else 0
+
         # Hotspot and delay...
         out_file.write(to_bytes(x_hot, 4))
         out_file.write(to_bytes(y_hot, 4))
         out_file.write(to_bytes(delay, 4))
+
         # Now the image, ARGB packed in little endian integers...(So really BGRA)(RGBA -> BGRA)
-        im_bytes = (np.asarray(img.image)[:, :, (2, 1, 0, 3)]).tobytes()
+        im_bytes = (np.asarray(img.image.convert("RGBA"))[:, :, (2, 1, 0, 3)]).tobytes()
         out_file.write(im_bytes)

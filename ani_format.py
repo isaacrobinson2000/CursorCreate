@@ -155,7 +155,6 @@ class AniFormat(AnimatedCursorStorageFormat):
                 if(size not in cls.DEF_CURSOR_SIZES):
                     del cur[size]
 
-
         # Write the magic...
         out.write(cls.RIFF_MAGIC)
         # We will deal with writing the length of the entire file later...
