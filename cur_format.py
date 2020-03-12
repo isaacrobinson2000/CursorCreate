@@ -154,3 +154,7 @@ class CurFormat(CursorStorageFormat):
 
         for image_data in imgs:
             out.write(image_data)
+
+    @classmethod
+    def get_identifier(cls) -> str:
+        return "cur"

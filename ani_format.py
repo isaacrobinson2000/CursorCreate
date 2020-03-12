@@ -105,6 +105,7 @@ def _rate_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     data_out["rate"] = [to_int(data[i:i+4]) for i in range(0, len(data), 4)]
 
 class AniFormat(AnimatedCursorStorageFormat):
+
     RIFF_MAGIC = b"RIFF"
     ACON_MAGIC = b"ACON"
 
@@ -200,3 +201,7 @@ class AniFormat(AnimatedCursorStorageFormat):
         entire_file_len = out.tell() - 8
         out.seek(4)
         out.write(to_bytes(entire_file_len, 4))
+
+    @classmethod
+    def get_identifier(cls) -> str:
+        return "ani"

@@ -44,12 +44,12 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
         hotspot = QtCore.QPoint(*self.hotspot)
 
-        self.__painter.setPen(QtGui.QColor(0, 0, 0, 200))
+        self.__painter.setPen(QtGui.QColor(0, 0, 0, 150))
         self.__painter.setBrush(QtGui.QColor(255, 0, 0, 100))
         self.__painter.drawEllipse(hotspot, 4, 4)
 
-        self.__painter.setPen(QtGui.QColor(0, 0, 255, 100))
-        self.__painter.setBrush(QtGui.QColor(0, 0, 255, 100))
+        self.__painter.setPen(QtGui.QColor(0, 0, 255, 255))
+        self.__painter.setBrush(QtGui.QColor(0, 0, 255, 255))
         self.__painter.drawEllipse(hotspot, 1, 1)
 
         self.__painter.end()

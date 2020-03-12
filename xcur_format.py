@@ -156,3 +156,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         # Now the image, ARGB packed in little endian integers...(So really BGRA)(RGBA -> BGRA)
         im_bytes = (np.asarray(img.image.convert("RGBA"))[:, :, (2, 1, 0, 3)]).tobytes()
         out_file.write(im_bytes)
+
+    @classmethod
+    def get_identifier(cls) -> str:
+        return "xcur"

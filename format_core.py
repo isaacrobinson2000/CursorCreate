@@ -31,34 +31,50 @@ def to_signed_bytes(num, length, byteorder="little"):
     return to_bytes((power + num) % power, length, byteorder)
 
 class CursorStorageFormat(ABC):
+
+    __ERROR_MSG = "Subclass doesn't implement this method!!!"
+
     @classmethod
     @abstractmethod
     def check(cls, first_bytes):
-        pass
+        raise NotImplementedError(cls.__ERROR_MSG)
 
     @classmethod
     @abstractmethod
     def read(cls, cur_file: BinaryIO) -> AnimatedCursor:
-        pass
+        raise NotImplementedError(cls.__ERROR_MSG)
 
     @classmethod
     @abstractmethod
     def write(cls, cursor: Cursor, out: BinaryIO):
-        pass
+        raise NotImplementedError(cls.__ERROR_MSG)
+
+    @classmethod
+    @abstractmethod
+    def get_identifier(cls) -> str:
+        raise NotImplementedError(cls.__ERROR_MSG)
 
 
 class AnimatedCursorStorageFormat(ABC):
+
+    __ERROR_MSG = "Subclass doesn't implement this method!!!"
+
     @classmethod
     @abstractmethod
     def check(cls, first_bytes):
-        pass
+        raise NotImplementedError(cls.__ERROR_MSG)
 
     @classmethod
     @abstractmethod
     def read(cls, cur_file: BinaryIO) -> AnimatedCursor:
-        pass
+        raise NotImplementedError(cls.__ERROR_MSG)
 
     @classmethod
     @abstractmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
-        pass
+        raise NotImplementedError(cls.__ERROR_MSG)
+
+    @classmethod
+    @abstractmethod
+    def get_identifier(cls) -> str:
+        raise NotImplementedError(cls.__ERROR_MSG)
