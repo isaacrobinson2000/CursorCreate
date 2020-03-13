@@ -2,48 +2,91 @@ from io import BytesIO
 from typing import BinaryIO
 from cursor import AnimatedCursor, Cursor, CursorIcon
 import cairosvg
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError, ImageOps
 import ani_format
 import cur_format
 import xcur_format
 from xml.etree import ElementTree
+from PIL import ImageSequence
 
+
+# Default sizes which all cursors loaded with this module are normalized with...
 DEFAULT_SIZES = [(24, 24), (32, 32), (48, 48), (64, 64), (128, 128)]
 MAX_DEFAULT_SIZE = DEFAULT_SIZES[-1]
 
 def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
+    """
+    Load a cursor from an image. Image is expected to be square. If it is not square, this method will slide
+    horizontally across the image using a height * height square, loading each following square as next frame of the
+    cursor with a delay of 100 and hotspots of (0, 0). Note this method supports all formats supported by the
+    PIL or pillow Image library. If the image passed is an animated image format like .gif or .apng, this method
+    will avoid loading in horizontal square tiles and will rather load in each frame of the image as each frame of
+    the cursor.
+
+    :param file: The file handler pointing to the image data.
+    :return: An AnimatedCursor object, representing an animated cursor. Static cursors will only have 1 frame.
+    """
     image: Image.Image = Image.open(file)
 
-    height = image.size[1]
-    num_frames = image.size[0] // height
+    if(hasattr(image, "is_animated") and (image.is_animated)):
+        # If this is an animated file, load in each frame as the frames of the cursor (Ex, ".gif")
+        print("Animated...")
+        min_dim = min(image.size) # We fit the image to a square...
+        images_durations = [(ImageOps.fit(image, (min_dim, min_dim)), frame.info.get("duration", 100))
+                            for frame in ImageSequence.Iterator(image)]
+    else:
+        # Separate all frames (Assumed to be stored horizontally)
+        height = image.size[1]
+        num_frames = image.size[0] // height
 
-    images = [image.crop((i * height, 0, i * height + height, height)) for i in range(num_frames)]
+        if(num_frames == 0):
+            raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
 
+        print("Not animated!!!")
+        images_durations = [(image.crop((i * height, 0, i * height + height, height)), 100) for i in range(num_frames)]
+
+    # Now convert images into the cursors, resizing them to match all the default sizes...
     final_cursor = AnimatedCursor()
 
-    for img in images:
+    for img, delay in images_durations:
         frame = Cursor()
 
         for size in DEFAULT_SIZES:
             frame.add(CursorIcon(img.resize(size, Image.LANCZOS), 0, 0))
 
-        final_cursor.append((frame, 100))
+        final_cursor.append((frame, delay))
 
     return final_cursor
 
 
 def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
+    """
+    Load a cursor from an SVG. SVG is expected to be square. If it is not square, this method will slide
+    horizontally across the SVG using a height * height square, loading each following square as next frame of the
+    cursor with a delay of 100 and hotspots of (0, 0). Note this method uses CairoSVG library to load and render
+    SVGs of various sizes to bitmaps. For info on supported SVG features, look at the docs for the CairoSVG library.
+
+    :param file: The file handler pointing to the SVG data.
+    :return: An AnimatedCursor object, representing an animated cursor. Static cursors will only have 1 frame.
+    """
+    # Convert SVG in memory to PNG, and read that in with PIL to get the default size of the SVG...
     mem_png = BytesIO()
     cairosvg.svg2png(file_obj=file, write_to=mem_png)
     file.seek(0)
     size_ref_img = Image.open(mem_png)
 
+    # Compute height to width ratio an the number of frame(Assumes they are stored horizontally)...
     h_to_w_multiplier = size_ref_img.size[0] / size_ref_img.size[1]
     num_frames = int(h_to_w_multiplier)
 
+    if (num_frames == 0):
+        raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
+
+    # Build empty animated cursor to start stashing frames in...
     ani_cur = AnimatedCursor([Cursor() for i in range(num_frames)], [100] * num_frames)
 
     for sizes in DEFAULT_SIZES:
+        # For each default size, resize svg to it and add all frames to the AnimatedCursor object...
         image = BytesIO()
         cairosvg.svg2png(file_obj=file, write_to=image, output_height=sizes[1],
                          output_width=int(sizes[1] * h_to_w_multiplier))
@@ -58,6 +101,14 @@ def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
 
 
 def load_cursor_from_cursor(file: BinaryIO) -> AnimatedCursor:
+    """
+    Loads a cursor from one of the supported cursor formats implemented in this library. Normalizes sizes and
+    removes non-square versions of the cursor...
+
+    :param file: The file handler pointing to the SVG data.
+    :return: An AnimatedCursor object, representing an animated cursor. Static cursors will only have 1 frame.
+    """
+    # Currently supported cursor formats... TODO: Consider replacing with __subclasses__() for more flexibility..
     ani_cur_readers = [ani_format.AniFormat, xcur_format.XCursorFormat]
     cur_readers = [cur_format.CurFormat]
 
@@ -83,13 +134,23 @@ def load_cursor_from_cursor(file: BinaryIO) -> AnimatedCursor:
 
 
 def load_cursor(file: BinaryIO):
+    """
+    Loads a cursor from any array of formats, including cursor formats (cur, ani, xcur), Images, and SVGs.
+
+    :param file: The file handler pointing to a format which is convertible to a cursor.
+    :return: A AnimatedCursor object, will contain a single frame if representing a static cursor...
+
+    :raises: A ValueError if format is unknown (not a .svg, image, or cursor format) or if the width of the image is
+             smaller than the height of the image, meaning it would be loaded as a 0-frame cursor (only applies to
+             non-cursor formats)...
+    """
     try:
         return load_cursor_from_cursor(file)
     except ValueError:
         file.seek(0)
         try:
             return load_cursor_from_image(file)
-        except UnidentifiedImageError:
+        except (UnidentifiedImageError):
             file.seek(0)
             try:
                 return load_cursor_from_svg(file)

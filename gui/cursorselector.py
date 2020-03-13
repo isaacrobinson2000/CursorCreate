@@ -1,7 +1,8 @@
 from PySide2 import QtWidgets, QtGui, QtCore
 from cursor_util import load_cursor
 from gui.cursorviewer import CursorDisplayWidget
-from urllib.parse import unquote, urlparse
+from urllib.request import urlopen
+from urllib.error import URLError
 from io import BytesIO
 import pathlib
 
@@ -60,23 +61,38 @@ class CursorSelectWidget(QtWidgets.QFrame):
             working_path = None
 
             for cur_path in event.mimeData().urls():
-                path = unquote(urlparse(cur_path.url()).path)
+                if(cur_path.isLocalFile()):
+                    print("Local File!!!")
+                    path = cur_path.path(options=QtCore.QUrl.FullyDecoded)
 
-                if(isinstance(pathlib.PurePath(), pathlib.PureWindowsPath) and path.startswith("/")):
-                    path = path[1:]
+                    if(isinstance(pathlib.PurePath(), pathlib.PureWindowsPath) and path.startswith("/")):
+                        path = path[1:]
 
-                with open(path, "rb") as f:
+                    with open(path, "rb") as f:
+                        try:
+                            cursor = load_cursor(f)
+                            working_path = path
+                        except ValueError as e:
+                            print(e)
+                else:
                     try:
-                        cursor = load_cursor(f)
-                        working_path = path
-                    except ValueError:
-                        continue
+                        print("Remote file...")
+                        req = urlopen(cur_path.url())
+                        data = BytesIO(req.read())
+                        data.seek(0)
+                        cursor = load_cursor(data)
+                        working_path = None
+                    except (URLError, ValueError) as e:
+                        print(e)
 
             if(cursor is not None):
                 self.current_cursor = cursor
                 self._current_file = working_path
                 event.acceptProposedAction()
-        elif(event.mimeData().hasImage()):
+                return
+
+        if(event.mimeData().hasImage()):
+            print("Image Data...")
             mem_img = BytesIO()
             buffer = QtCore.QBuffer()
             image = QtGui.QImage(event.mimeData().imageData())
@@ -88,6 +104,7 @@ class CursorSelectWidget(QtWidgets.QFrame):
             self.current_cursor = load_cursor(mem_img)
             self._current_file = None
             event.acceptProposedAction()
+            return
 
 
     @property

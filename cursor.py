@@ -3,7 +3,7 @@ Cursor Package:
 Provides core objects or data types for manipulating cursor data, including images, hotspots, and delays...
 """
 
-from typing import List, Sequence, Tuple, Iterable, Iterator, Union
+from typing import Tuple, Iterable, Iterator, Union
 from PIL import Image, ImageOps
 
 
@@ -201,10 +201,11 @@ class AnimatedCursor(list):
 
     def normalize(self, init_sizes: Iterable[Tuple[int, int]] = None):
         """
-        Normalize this animated cursor, by
-        TODO:
+        Normalize this animated cursor, by making sure all frames contain the same sizes. This is done by adding
+        missing sizes...
 
-        :param init_sizes:
+        :param init_sizes: An Iterable of a tuple of integers, being width, height pairs. These are sizes which will
+                           be added to all the cursor frames in this animated cursor...
         :return:
         """
         if(init_sizes is None):

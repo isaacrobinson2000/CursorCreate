@@ -7,10 +7,20 @@ from PIL import Image
 import shutil
 import json
 
+
 CURRENT_FORMAT_VERSION = 1
 CURRENT_FORMAT_NAME = "cursor_build_file"
 
 def build_theme(theme_name: str, directory: Path, cursor_dict: Dict[str, AnimatedCursor]):
+    """
+    Build the specified theme using all currently loaded theme builders, building it for all platforms...
+
+    :param theme_name: The name of the theme.
+    :param directory: The directory to build the new theme in.
+    :param cursor_dict: A dictionary of cursor name(string) to AnimatedCursor, specifying cursors and the types they
+                        are suppose to be. Look at the 'DEFAULT_CURSORS' class variable in the CursorThemeBuilder
+                        class to see all valid types which a theme builder will accept...
+    """
     build_theme_in = directory / theme_name
     build_theme_in.mkdir(exist_ok=True)
     theme_builders = get_theme_builders()
@@ -22,6 +32,14 @@ def build_theme(theme_name: str, directory: Path, cursor_dict: Dict[str, Animate
 
 
 def _make_image(cursor: AnimatedCursor) -> Image:
+    """
+    PRIVATE METHOD:
+    Make an image from a cursor, representing all of it's frames. Used by save_project to make project art files
+    when original files can't be found and copied over, as the cursor was loaded from the clip board as an image...
+
+    :param cursor:
+    :return:
+    """
     cursor.normalize([(128, 128)])
     im = Image.new("RGBA", (128 * len(cursor), 128), (0, 0, 0, 0))
 

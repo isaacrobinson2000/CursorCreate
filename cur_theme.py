@@ -8,6 +8,10 @@ from ani_format import AniFormat
 
 
 class CursorThemeBuilder(ABC):
+    """
+    Abstract class for representing theme builders for different platforms. Also includes a list of cursors which
+    a cursor theme can provide, in a class variable call DEFAULT_CURSORS.
+    """
     # List of cursors need to be supported for full theme support on all platforms...(Most for linux)
     DEFAULT_CURSORS = {
         'alias',
@@ -59,20 +63,42 @@ class CursorThemeBuilder(ABC):
         'zoom-out'
     }
 
+    __ERROR_MSG = "Subclass doesn't implement this method!!!"
 
     @classmethod
     @abstractmethod
     def build_theme(cls, theme_name: str, cursor_dict: Dict[str, AnimatedCursor], directory: Path):
-        pass
+        """
+        Build the passed cursor theme for this platform...
+
+        :param theme_name: The name of the Theme to build...
+        :param cursor_dict: A dictionary of cursor name to AnimatedCursor, specifying cursors and the types they
+                            are suppose to be. Look at the 'DEFAULT_CURSORS' class variable in the CursorThemeBuilder
+                            class to see all valid types which a theme builder will accept...
+        :param directory: The directory to build the theme for this platform in.
+        """
+        raise NotImplementedError(cls.__ERROR_MSG)
 
     @classmethod
     @abstractmethod
     def get_name(cls):
-        pass
+        """
+        Get the name of this theme builder. Usually specifies the platform this theme builder applies to.
+
+        :return: A string, the name of this theme builder's platform.
+        """
+        raise NotImplementedError(cls.__ERROR_MSG)
 
 
 class LinuxThemeBuilder(CursorThemeBuilder):
+    """
+    The theme builder for the linux platform. Technically works for any platform which uses X-Org or Wayland
+    (FreeBSD, etc.), but is called Linux as this is the most common platform known for using X-Org Cursor Theme
+    Format for loading cursors. Generates a valid X-Org Cursor Theme which when placed in the ~/.icons or
+    /usr/share/icons folder on linux becomes visible in the system settings and can be selected.
+    """
 
+    # All symlinks required by x-org cursor themes to be fully compatible with all software...
     SYM_LINKS_TO_CUR = {
         'e29285e634086352946a0e7090d73106': 'pointer',
          '9d800788f1b08800ae810202380a0822': 'pointer',
@@ -131,7 +157,9 @@ class LinuxThemeBuilder(CursorThemeBuilder):
          'size_all': 'fleur',
          '6407b0e94181790501fd1e167b474872': 'copy'
     }
+    # The file name which gives the preview in system settings...
     PREVIEW_FILE = "thumbnail.png"
+    # The x-org index theme file name...
     THEME_FILE_NAME = "index.theme"
 
     @classmethod
@@ -163,7 +191,8 @@ class LinuxThemeBuilder(CursorThemeBuilder):
     def get_name(cls):
         return "linux"
 
-#
+
+# Window inf file template...
 WINDOWS_INF_FILE = """\
 ; Windows installer for {name} cursor theme.
 ; Right click on this file ("install.inf"), and click "Install" to install the cursor theme.
@@ -194,7 +223,13 @@ SCHEME_NAME = "{name}"
 """
 
 class WindowsThemeBuilder(CursorThemeBuilder):
-
+    """
+    The theme builder for the windows platform. Takes a subset of the cursors which actually apply to the windows
+    platform, converts them to windows formats, and then packages them in a folder with a install.inf file which
+    will automatically move the cursors into the right system paths and add them to Registry as a cursor theme
+    the user can set in the control panel.
+    """
+    # Converts cursor names specified in DEFAULT_CURSORS to the cursors for windows...
     LINUX_TO_WIN_CURSOR = {
         "default": ("pointer", "normal-select"),
         "help": ("help", "help-select"),
@@ -213,6 +248,7 @@ class WindowsThemeBuilder(CursorThemeBuilder):
         "up-arrow": ("alternate", "alt-select")
     }
 
+    # Order of cursor pseudo-names in the registry...
     REGISTRY_ORDER = [
         "pointer", "help", "work", "busy", "cross", "text", "hand", "unavailable",
         "vert", "horz", "dgn1", "dgn2", "move", "alternate", "link"
@@ -263,4 +299,11 @@ class WindowsThemeBuilder(CursorThemeBuilder):
 
 
 def get_theme_builders() -> List[Type[CursorThemeBuilder]]:
+    """
+    Returns all subclasses of CursorThemeBuilder or all cursor builders loaded into python currently.
+
+    :return: A list of theme builders currently visible to the python interpreter...
+    """
+    # We have to do this as it doesn't think types match...
+    # noinspection PyTypeChecker
     return CursorThemeBuilder.__subclasses__()
