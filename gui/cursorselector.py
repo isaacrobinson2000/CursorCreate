@@ -62,7 +62,6 @@ class CursorSelectWidget(QtWidgets.QFrame):
 
             for cur_path in event.mimeData().urls():
                 if(cur_path.isLocalFile()):
-                    print("Local File!!!")
                     path = cur_path.path(options=QtCore.QUrl.FullyDecoded)
 
                     if(isinstance(pathlib.PurePath(), pathlib.PureWindowsPath) and path.startswith("/")):
@@ -76,7 +75,6 @@ class CursorSelectWidget(QtWidgets.QFrame):
                             print(e)
                 else:
                     try:
-                        print("Remote file...")
                         req = urlopen(cur_path.url())
                         data = BytesIO(req.read())
                         data.seek(0)
@@ -92,7 +90,6 @@ class CursorSelectWidget(QtWidgets.QFrame):
                 return
 
         if(event.mimeData().hasImage()):
-            print("Image Data...")
             mem_img = BytesIO()
             buffer = QtCore.QBuffer()
             image = QtGui.QImage(event.mimeData().imageData())

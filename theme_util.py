@@ -7,7 +7,6 @@ from PIL import Image
 import shutil
 import json
 
-
 CURRENT_FORMAT_VERSION = 1
 CURRENT_FORMAT_NAME = "cursor_build_file"
 
@@ -35,10 +34,11 @@ def _make_image(cursor: AnimatedCursor) -> Image:
     """
     PRIVATE METHOD:
     Make an image from a cursor, representing all of it's frames. Used by save_project to make project art files
-    when original files can't be found and copied over, as the cursor was loaded from the clip board as an image...
+    when original files can't be found and copied over, as the cursor was loaded from the clip board as an image
+    or dragged and dropped from the internet...
 
-    :param cursor:
-    :return:
+    :param cursor: The cursor to convert to a tiled horizontal image.
+    :return: An picture with frames stored horizontally...
     """
     cursor.normalize([(128, 128)])
     im = Image.new("RGBA", (128 * len(cursor), 128), (0, 0, 0, 0))
@@ -50,6 +50,15 @@ def _make_image(cursor: AnimatedCursor) -> Image:
 
 
 def _disable_newlines(json_data: str, num_lines_in: int) -> str:
+    """
+    PRIVATE METHOD:
+    Strip new lines in a json made by python's json parser a certain amount of blocks in. Used by save_project
+    to write a cleaner json file.
+
+    :param json_data: The json data to strip of new lines.
+    :param num_lines_in: Number of json "blocks" in (blocks are defined by {} and [])
+    :return: A cleaner json string with some new line characters stripped...
+    """
     json_data = list(json_data)
     blocks = {"{": "}", "[": "]"}
     block_stack = []
@@ -74,6 +83,18 @@ def _disable_newlines(json_data: str, num_lines_in: int) -> str:
 
 
 def save_project(theme_name: str, directory: Path, file_dict: Dict[str, Tuple[Path, AnimatedCursor]]):
+    """
+    Save the cursor project to the cursor project format, which includes all source images and a build.json which
+    specifies how to build the platform dependent cursor themes from the source images.
+
+    :param theme_name: The name of this new project.
+    :param directory: The directory to save the new project in.
+    :param file_dict: A dictionary of cursor name(string) to a tuple of source file and AnimatedCursor, specifying
+                      cursors, there source files and the types they are suppose to be. Look at the 'DEFAULT_CURSORS'
+                      class variable in the CursorThemeBuilder class to see all valid types which a theme builder
+                      will accept... The source files will be copied into the project's main directory if available,
+                      otherwise a tiled png will be made from the animated cursor object included...
+    """
     build_theme_in = directory / theme_name
     build_theme_in.mkdir(exist_ok=True)
 
@@ -106,6 +127,13 @@ def save_project(theme_name: str, directory: Path, file_dict: Dict[str, Tuple[Pa
 
 
 def load_project(theme_build_file: Path) -> Union[None, Dict[str, Tuple[Path, AnimatedCursor]]]:
+    """
+    Load a cursor theme project from it's build.json file, and return it's (source file, cursor) dictionary...
+
+    :param theme_build_file: The path to the build.json of this cursor theme project.
+    :return: A dictionary of name(string) -> (source file path, cursor). This specifies all data needed to build the
+             cursor project.
+    """
     theme_build_dir = theme_build_file.parent
 
     with theme_build_file.open("r") as f:
