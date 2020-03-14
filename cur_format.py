@@ -45,12 +45,23 @@ def _write_bmp(img: Image.Image, out_file: BinaryIO):
 
 
 class CurFormat(CursorStorageFormat):
+    """
+    The windows .cur format, which is used for storing static cursors. It is a subset of the windows .ico format.
+    Although windows supports placing png's in the cur rather then bmp images, it is poorly supported in the
+    .ani decoder on windows so this encoder uses the older more well support nested bmp format.
+    """
 
     MAGIC = b"\0\0\2\0"
     ICO_MAGIC = b"\0\0\1\0"
 
     @classmethod
     def check(cls, first_bytes) -> bool:
+        """
+        Check if the first bytes of this file match the windows .cur magic bytes.
+
+        :param first_bytes: First 12 bytes of the file, this format actually only needs the first 4.
+        :return: True if valid .cur, otherwise false...
+        """
         return first_bytes[:4] == cls.MAGIC or first_bytes[:4] == cls.ICO_MAGIC
 
     @classmethod
@@ -141,8 +152,8 @@ class CurFormat(CursorStorageFormat):
 
             width, height = width if(width < 256) else 0, height if(height < 256) else 0
 
-            out.write(to_bytes(width, 1))
-            out.write(to_bytes(height, 1))
+            out.write(to_bytes(width, 1)) # Width, 1 byte.
+            out.write(to_bytes(height, 1)) # Height, 1 byte.
             out.write(b"\0\0")
             out.write(to_bytes(hot_x, 2))
             out.write(to_bytes(hot_y, 2))

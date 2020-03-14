@@ -8,26 +8,45 @@ from format_core import AnimatedCursorStorageFormat, to_int, to_bytes
 
 
 class XCursorFormat(AnimatedCursorStorageFormat):
-
+    """
+    The linux for X-Org format for storing cursor, both animated and static. Contains "XCur" magic followed by the
+    number of entries in the file. Each entry is 16 bytes and contains the type, subtype, offset, and length. Out
+    in memory at the offset is another header which gives the type and subtype again and then gives the
+    width, height, x hotspot, y hotspot, and the delay, followed by BGRA image data. Note all attributes in this format
+    are stored as 4 byte or 32 bit little endian unsigned integers except image data described above.
+    """
     MAGIC = b"Xcur"
     VERSION = 65536
     CURSOR_TYPE = 0xfffd0002
     HEADER_SIZE = 16
     IMG_CHUNK_H_SIZE = 36
-    # The downscaling factor...
+    # The downscaling factor of the nominal size...
     SIZE_SCALING_FACTOR = 3 / 4
 
     @classmethod
     def check(cls, first_bytes):
+        """
+        Check if the first bytes of this file are a valid x-org cursor file
+
+        :param first_bytes: The first 12 bytes of the file being tested.
+        :return: True if a valid x-org cursor file, otherwise False.
+        """
         return first_bytes[:4] == cls.MAGIC
 
     @classmethod
     def _assert(cls, boolean, msg="Something is wrong!!!"):
+        """ Private, used for throwing exceptions when assertions don't hold while reading the format. """
         if(not boolean):
             raise SyntaxError(msg)
 
     @classmethod
     def read(cls, cur_file: BinaryIO) -> AnimatedCursor:
+        """
+        Read an xcur or X-Org cursor file from the specified file buffer.
+
+        :param cur_file: The file buffer with xcursor data.
+        :return: An AnimatedCursor object, non-animated cursors will contain only 1 frame.
+        """
         magic_data = cur_file.read(4)
 
         cls._assert(cls.check(magic_data), "Not a XCursor File!!!")
@@ -101,6 +120,12 @@ class XCursorFormat(AnimatedCursorStorageFormat):
 
     @classmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
+        """
+        Write an AnimatedCursor to the specified file in the X-Org cursor format.
+
+        :param cursor: The AnimatedCursor object to write.
+        :param out: The file buffer to write the new X-Org Cursor data to.
+        """
         cursor.normalize()
 
         if(len(cursor) == 0):
@@ -153,7 +178,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         out_file.write(to_bytes(y_hot, 4))
         out_file.write(to_bytes(delay, 4))
 
-        # Now the image, ARGB packed in little endian integers...(So really BGRA)(RGBA -> BGRA)
+        # Now the image, ARGB packed in little endian integers...(So really BGRA)(ARGB -> BGRA)
         im_bytes = (np.asarray(img.image.convert("RGBA"))[:, :, (2, 1, 0, 3)]).tobytes()
         out_file.write(im_bytes)
 

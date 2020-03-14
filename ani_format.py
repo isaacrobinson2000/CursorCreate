@@ -9,6 +9,17 @@ import copy
 
 # UTILITY METHODS:
 def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes]=None, list_chunks: Set[bytes]=None, byteorder="little") -> Iterator[Tuple[bytes, int, bytes]]:
+    """
+    Reads a valid RIFF file, reading all the chunks in the file...
+
+    :param buffer: The file buffer with valid RIFF data.
+    :param skip_chunks: A set of length 4 bytes specifying chunks which are not actual chunks but are identifiers
+                        followed by valid chunks.
+    :param list_chunks: A set of length 4 bytes specifying chunks which containing sub-chunks, meaning there data
+                        should be sub-iterated.
+    :param byteorder: The byteorder of the integers in the file, "big" or "little". Default is "little".
+    :return: A generator which yields each chunks identifier, size, and data as bytes.
+    """
     if(skip_chunks is None):
         skip_chunks = set()
     if(list_chunks is None):
@@ -34,12 +45,23 @@ def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes]=None, list_chunks: Set
 
 
 def write_chunk(buffer: BinaryIO, chunk_id: bytes, chunk_data: bytes, byteorder="little"):
+    """
+    Writes a chunk to file.
+
+    :param buffer: The file buffer to write to.
+    :param chunk_id: The 4 byte chunk identifier.
+    :param chunk_data: The chunk's data as a bytes object.
+    :param byteorder: The byteorder to use when writing the byte's size, defaults to "little"
+    """
     buffer.write(chunk_id[:4])
     buffer.write(to_bytes(len(chunk_data), 4, byteorder=byteorder))
     buffer.write(chunk_data)
 
 
 def _header_chunk(header: None, data: bytes, data_out: Dict[str, Any]):
+    """
+    Represents .ani's header chunk, which has an identifier of "anih".
+    """
     if(header is not None):
         raise SyntaxError("This ani has 2 headers!")
 
@@ -64,6 +86,9 @@ def _header_chunk(header: None, data: bytes, data_out: Dict[str, Any]):
 
 
 def _icon_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
+    """
+    Represents .ani icon chunk, which has an identifier of "icon".
+    """
     if(header is None):
         raise SyntaxError("icon chunk became before header!")
 
@@ -86,6 +111,9 @@ def _icon_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
 
 
 def _seq_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
+    """
+    Represents .ani's sequence chunk, which has an identifier of "seq ".
+    """
     if(header is None):
         raise SyntaxError("seq chunk came before header!")
 
@@ -96,6 +124,9 @@ def _seq_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
 
 
 def _rate_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
+    """
+    Represents .ani's rate chunk, which has an identifier of "rate".
+    """
     if(header is None):
         raise SyntaxError("rate chunk became before header!")
 
@@ -105,10 +136,18 @@ def _rate_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     data_out["rate"] = [to_int(data[i:i+4]) for i in range(0, len(data), 4)]
 
 class AniFormat(AnimatedCursorStorageFormat):
+    """
+    Represents the windows .ani format, used on windows for storing animated cursors. The file is a type of RIFF file
+    with an identifier of "ACON" and contains a list of .cur files internally in "icon" chunks. The "seq " chunk stores
+    the order to play the icons in and and "rate" chunk specifies the rate each frame should last on screen, measured
+    in 1/60ths of a second.
+    """
 
+    # Magic for general RIFF format and ANI format.
     RIFF_MAGIC = b"RIFF"
     ACON_MAGIC = b"ACON"
 
+    # All important .ani RIFF chunks which are vital to reading the file.
     CHUNKS = {
         b"anih": _header_chunk,
         b"icon": _icon_chunk,
@@ -118,10 +157,22 @@ class AniFormat(AnimatedCursorStorageFormat):
 
     @classmethod
     def check(cls, first_bytes) -> bool:
+        """
+        Check if the first bytes of this file are a valid windows .ani file
+
+        :param first_bytes: The first 12 bytes of the file being tested.
+        :return: True if a valid windows .ani file, otherwise False.
+        """
         return ((first_bytes[:4] == cls.RIFF_MAGIC) and (first_bytes[8:12] == cls.ACON_MAGIC))
 
     @classmethod
     def read(cls, cur_file: BinaryIO) -> AnimatedCursor:
+        """
+        Read a windows .ani file from disk to an AnimatedCursor.
+
+        :param cur_file: The file buffer pointer to the windows .ani data.
+        :return: An AnimatedCursor object storing all cursor info.
+        """
         magic_header = cur_file.read(12)
 
         if(not cls.check(magic_header)):
@@ -146,6 +197,12 @@ class AniFormat(AnimatedCursorStorageFormat):
 
     @classmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
+        """
+        Write an AnimatedCursor to the specified file in the windows .ani format.
+
+        :param cursor: The AnimatedCursor object to write.
+        :param out: The file buffer to write the new .ani data to.
+        """
         # Normalize the cursor sizes...
         cursor = copy.deepcopy(cursor)
         cursor.normalize(list(cls.DEF_CURSOR_SIZES))
