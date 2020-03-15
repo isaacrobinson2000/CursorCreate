@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, Any
 import cursor_util
 from cur_theme import get_theme_builders
 from cursor import AnimatedCursor
@@ -10,12 +10,13 @@ import json
 CURRENT_FORMAT_VERSION = 1
 CURRENT_FORMAT_NAME = "cursor_build_file"
 
-def build_theme(theme_name: str, directory: Path, cursor_dict: Dict[str, AnimatedCursor]):
+def build_theme(theme_name: str, directory: Path, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor]):
     """
     Build the specified theme using all currently loaded theme builders, building it for all platforms...
 
     :param theme_name: The name of the theme.
     :param directory: The directory to build the new theme in.
+    :param metadata: A dictionary of string to any(mostly string) stores "author", and "licence".
     :param cursor_dict: A dictionary of cursor name(string) to AnimatedCursor, specifying cursors and the types they
                         are suppose to be. Look at the 'DEFAULT_CURSORS' class variable in the CursorThemeBuilder
                         class to see all valid types which a theme builder will accept...
@@ -27,7 +28,7 @@ def build_theme(theme_name: str, directory: Path, cursor_dict: Dict[str, Animate
     for theme_builder in theme_builders:
         ext_dir = build_theme_in / theme_builder.get_name()
         ext_dir.mkdir(exist_ok=True)
-        theme_builder.build_theme(theme_name, cursor_dict, ext_dir)
+        theme_builder.build_theme(theme_name, metadata, cursor_dict, ext_dir)
 
 
 def _make_image(cursor: AnimatedCursor) -> Image:
@@ -82,13 +83,14 @@ def _disable_newlines(json_data: str, num_lines_in: int) -> str:
     return "".join(json_data)
 
 
-def save_project(theme_name: str, directory: Path, file_dict: Dict[str, Tuple[Path, AnimatedCursor]]):
+def save_project(theme_name: str, directory: Path, metadata: Dict[str, Any], file_dict: Dict[str, Tuple[Path, AnimatedCursor]]):
     """
     Save the cursor project to the cursor project format, which includes all source images and a build.json which
     specifies how to build the platform dependent cursor themes from the source images.
 
     :param theme_name: The name of this new project.
     :param directory: The directory to save the new project in.
+    :param metadata: A dictionary of string to any(mostly string) stores "author", and "licence".
     :param file_dict: A dictionary of cursor name(string) to a tuple of source file and AnimatedCursor, specifying
                       cursors, there source files and the types they are suppose to be. Look at the 'DEFAULT_CURSORS'
                       class variable in the CursorThemeBuilder class to see all valid types which a theme builder
@@ -101,6 +103,7 @@ def save_project(theme_name: str, directory: Path, file_dict: Dict[str, Tuple[Pa
     json_obj = {
         "format": CURRENT_FORMAT_NAME,
         "version": CURRENT_FORMAT_VERSION,
+        "metadata": metadata,
         "data": []
     }
 
@@ -126,13 +129,15 @@ def save_project(theme_name: str, directory: Path, file_dict: Dict[str, Tuple[Pa
         fp.write(_disable_newlines(json.dumps(json_obj, indent=4), 4))
 
 
-def load_project(theme_build_file: Path) -> Union[None, Dict[str, Tuple[Path, AnimatedCursor]]]:
+def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Dict[str, Tuple[Path, AnimatedCursor]]]]:
     """
     Load a cursor theme project from it's build.json file, and return it's (source file, cursor) dictionary...
 
     :param theme_build_file: The path to the build.json of this cursor theme project.
-    :return: A dictionary of name(string) -> (source file path, cursor). This specifies all data needed to build the
-             cursor project.
+    :return: A tuple, containing 2 items in order:
+                - dictionary of string -> any. Contains metadata, including the licence, author, and etc.
+                - dictionary of name(string) -> (source file path, cursor). This specifies all data needed to build the
+                  cursor project.
     """
     theme_build_dir = theme_build_file.parent
 
@@ -143,6 +148,14 @@ def load_project(theme_build_file: Path) -> Union[None, Dict[str, Tuple[Path, An
         is_version = ("version" in json_build_data) and (json_build_data["version"] == CURRENT_FORMAT_VERSION)
 
         file_cur_dict = {}
+
+        if("metadata" in json_build_data):
+            metadata_info = json_build_data["metadata"]
+        else:
+            metadata_info = {
+                "author": None,
+                "licence": None,
+            }
 
         if((not is_format) or (not is_version)):
             return None
@@ -164,4 +177,4 @@ def load_project(theme_build_file: Path) -> Union[None, Dict[str, Tuple[Path, An
 
             file_cur_dict[cursor_info["cursor_name"]] = (cursor_path, cursor)
 
-        return file_cur_dict
+        return (metadata_info, file_cur_dict)

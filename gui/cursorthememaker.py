@@ -1,6 +1,6 @@
 from io import BytesIO
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict, Any
 from PySide2 import QtWidgets, QtCore, QtGui
 import theme_util
 from gui.cursorselector import CursorSelectWidget
@@ -8,6 +8,7 @@ from gui.layouts import FlowLayout
 from cur_theme import CursorThemeBuilder
 from PIL.ImageQt import ImageQt
 from PIL import Image
+import copy
 import base64
 import re
 import sys
@@ -68,6 +69,8 @@ class CursorThemeMaker(QtWidgets.QWidget):
 
         self._open_build_project = None
 
+        self._metadata = {"author": None, "licence": None}
+
         self._main_layout = QtWidgets.QVBoxLayout(self)
 
         self._scroll_pane = QtWidgets.QScrollArea()
@@ -83,6 +86,9 @@ class CursorThemeMaker(QtWidgets.QWidget):
         for cursor_name in sorted(CursorThemeBuilder.DEFAULT_CURSORS):
             self._cursor_selectors[cursor_name] = CursorSelectWidget(label_text=cursor_name)
             self._flow_layout.addWidget(self._cursor_selectors[cursor_name])
+
+        self._edit_metadata = QtWidgets.QPushButton("Edit Artist Info")
+        self._main_layout.addWidget(self._edit_metadata)
 
         self._inner_pane_area.setLayout(self._flow_layout)
         self._scroll_pane.setWidget(self._inner_pane_area)
@@ -116,6 +122,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
         self._update_proj_btn.clicked.connect(self.update_project)
         self._build_in_place.clicked.connect(self.build_in_place)
         self._clear_btn.clicked.connect(self.clear_ui)
+        self._edit_metadata.clicked.connect(self._chg_metadata)
 
     def create_project(self):
         dir_picker = DirectoryPicker(self, "Select Directory to Create Project In")
@@ -131,7 +138,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
                     c_f_path = Path(selector.current_file) if(selector.current_file is not None) else None
                     files_and_cursors[cursor_name] = (c_f_path, selector.current_cursor)
 
-            theme_util.save_project(theme_name, theme_dir, files_and_cursors)
+            theme_util.save_project(theme_name, theme_dir, self._metadata, files_and_cursors)
 
     def build_project(self):
         dir_picker = DirectoryPicker(self, "Select Directory to Build Project In")
@@ -146,7 +153,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
                 if(selector.current_cursor is not None):
                     cursors[cursor_name] = selector.current_cursor
 
-            theme_util.build_theme(theme_name, theme_dir, cursors)
+            theme_util.build_theme(theme_name, theme_dir, self._metadata, cursors)
 
     def build_in_place(self):
         if(self._open_build_project is None):
@@ -161,7 +168,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
             if (selector.current_cursor is not None):
                 cursors[cursor_name] = selector.current_cursor
 
-        theme_util.build_theme(theme_name, dir_path, cursors)
+        theme_util.build_theme(theme_name, dir_path, self._metadata, cursors)
 
         QtWidgets.QMessageBox.information(self, "Cursor Theme Maker", f"Project '{self._open_build_project}' Built!!!")
 
@@ -179,7 +186,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
                 c_f_path = Path(selector.current_file) if (selector.current_file is not None) else None
                 files_and_cursors[cursor_name] = (c_f_path, selector.current_cursor)
 
-        theme_util.save_project(theme_name, dir_path, files_and_cursors)
+        theme_util.save_project(theme_name, dir_path, self._metadata, files_and_cursors)
 
         QtWidgets.QMessageBox.information(self, "Cursor Theme Maker",
                                           f"Project '{self._open_build_project}' Updated!!!")
@@ -194,7 +201,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
     def load_from_path(self, file_name: str):
         if(file_name != ""):
             try:
-                data = theme_util.load_project(Path(file_name))
+                metadata, data = theme_util.load_project(Path(file_name))
 
                 for name, (path, cursor) in data.items():
                     if(name in self._cursor_selectors):
@@ -202,15 +209,22 @@ class CursorThemeMaker(QtWidgets.QWidget):
                         self._cursor_selectors[name].current_file = str(path)
 
                 self._open_build_project = file_name
+                self._metadata = metadata
                 self._update_proj_btn.setEnabled(True)
                 self._build_in_place.setEnabled(True)
             except Exception as e:
                 print(e)
 
+    def _chg_metadata(self):
+        dialog = MetaDataEdit(self, self._metadata)
+        dialog.exec_()
+        self._metadata = dialog.get_metadata()
+
     def clear_ui(self):
         for name, cursor_selector in self._cursor_selectors.items():
             cursor_selector.current_cursor = None
             cursor_selector.current_file = None
+        self._metadata = {"author": None, "licence": None}
         self._open_build_project = None
         self._update_proj_btn.setEnabled(False)
         self._build_in_place.setEnabled(False)
@@ -276,6 +290,59 @@ class DirectoryPicker(QtWidgets.QDialog):
 
     def get_results(self):
         return self._result
+
+
+class MetaDataEdit(QtWidgets.QDialog):
+
+    FILE_PICKER_FILTER = "Text Files (*.txt)"
+
+    def __init__(self, parent=None, metadata: Dict[str, Any]=None):
+        super().__init__(parent)
+        super().setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint)
+
+        if(metadata is None):
+            self._metadata = {"author": None, "licence": None}
+        else:
+            self._metadata = copy.deepcopy(metadata)
+
+        self._main_layout = QtWidgets.QFormLayout(self)
+        self._author = QtWidgets.QLineEdit()
+        self._author.setText("" if(self._metadata.get("author", None) is None) else self._metadata["author"])
+
+        self._licence_text = QtWidgets.QTextEdit()
+        self._licence_text.setText("" if(self._metadata.get("licence", None) is None) else self._metadata["licence"])
+
+        self._licence_btn = QtWidgets.QPushButton("From File")
+
+        self._submit_btns = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Cancel |
+                                                       QtWidgets.QDialogButtonBox.Ok)
+
+        self._main_layout.addRow("Author:", self._author)
+        self._main_layout.addRow("Licence:", self._licence_btn)
+        self._main_layout.addRow(self._licence_text)
+        self._main_layout.addRow(self._submit_btns)
+
+        self._licence_btn.clicked.connect(self._on_file_req)
+        self._submit_btns.accepted.connect(self._on_accept)
+        self._submit_btns.rejected.connect(self.reject)
+
+    def _on_file_req(self):
+        path, __ = QtWidgets.QFileDialog.getOpenFileName(self, "Select a Licence File", filter=self.FILE_PICKER_FILTER)
+
+        if(path != ""):
+            try:
+                with open(path) as f:
+                    self._licence_text.setText(f.read())
+            except IOError as e:
+                print(e)
+
+    def _on_accept(self):
+        self._metadata["author"] = None if(self._author.text() == "") else self._author.text()
+        self._metadata["licence"] = None if(self._licence_text.toPlainText() == "") else self._licence_text.toPlainText()
+        self.accept()
+
+    def get_metadata(self):
+        return self._metadata
 
 
 def launch_gui(def_project: Union[str, None]):

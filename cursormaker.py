@@ -59,12 +59,12 @@ def main(args):
         for config_file in args[1:]:
             try:
                 config_path = Path(config_file)
-                fc_data = theme_util.load_project(config_path)
+                metadata, fc_data = theme_util.load_project(config_path)
                 fc_data = {name: cursor for name, (cur_path, cursor) in fc_data.items()}
-                theme_util.build_theme(config_path.parent.name, config_path.parent.parent, fc_data)
+                theme_util.build_theme(config_path.parent.name, config_path.parent.parent, metadata, fc_data)
             except Exception as e:
                 print(e)
-                return
+                raise e
         print("Build Successful!")
     else:
         # Rogue arguments or flags passed, just print help...

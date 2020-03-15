@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Any
 from cursor import AnimatedCursor
 from xcur_format import XCursorFormat
 from cur_format import CurFormat
@@ -67,11 +67,12 @@ class CursorThemeBuilder(ABC):
 
     @classmethod
     @abstractmethod
-    def build_theme(cls, theme_name: str, cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
         """
         Build the passed cursor theme for this platform...
 
         :param theme_name: The name of the Theme to build...
+        :param metadata: A dictionary of string to any(mostly string) stores "author", "licence", and "licence_name".
         :param cursor_dict: A dictionary of cursor name to AnimatedCursor, specifying cursors and the types they
                             are suppose to be. Look at the 'DEFAULT_CURSORS' class variable in the CursorThemeBuilder
                             class to see all valid types which a theme builder will accept...
@@ -100,7 +101,7 @@ class LinuxThemeBuilder(CursorThemeBuilder):
 
     # All symlinks required by x-org cursor themes to be fully compatible with all software...
     SYM_LINKS_TO_CUR = {
-        'e29285e634086352946a0e7090d73106': 'pointer',
+         'e29285e634086352946a0e7090d73106': 'pointer',
          '9d800788f1b08800ae810202380a0822': 'pointer',
          'xterm': 'text',
          'crossed_circle': 'not-allowed',
@@ -161,14 +162,24 @@ class LinuxThemeBuilder(CursorThemeBuilder):
     PREVIEW_FILE = "thumbnail.png"
     # The x-org index theme file name...
     THEME_FILE_NAME = "index.theme"
+    # Name of file storing licence...
+    LICENCE_FILE_NAME = "LICENSE.txt"
 
     @classmethod
-    def build_theme(cls, theme_name: str, cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
         new_theme = directory / theme_name
         new_theme.mkdir(exist_ok=True)
 
         with (new_theme / cls.THEME_FILE_NAME).open("w") as theme_f:
+            author = metadata.get("author", None)
+            if(author is not None):
+                theme_f.write(f"# {theme_name} cursor theme created by {author}.\n")
             theme_f.write(f"[Icon Theme]\nName={theme_name}\n")
+
+        licence_text = metadata["licence"]
+        if(licence_text is not None):
+            with (new_theme / cls.LICENCE_FILE_NAME).open("w") as f:
+                f.write(licence_text)
 
         cursor_path = (new_theme / "cursors")
         cursor_path.mkdir(exist_ok=True)
@@ -194,7 +205,7 @@ class LinuxThemeBuilder(CursorThemeBuilder):
 
 # Window inf file template...
 WINDOWS_INF_FILE = """\
-; Windows installer for {name} cursor theme.
+; Windows installer for {name} cursor theme{author}.
 ; Right click on this file ("install.inf"), and click "Install" to install the cursor theme.
 ; After installing, change the cursors via windows mouse pointer settings dialog.
 
@@ -215,6 +226,8 @@ HKCU,"Control Panel\Cursors\Schemes","%SCHEME_NAME%",,"{reg_list}"
 [Scheme.Cur]
 "install.inf"
 {cursor_list}
+
+{licence_txt}
 
 [Strings]
 CUR_DIR = "Cursors\{name}"
@@ -254,8 +267,11 @@ class WindowsThemeBuilder(CursorThemeBuilder):
         "vert", "horz", "dgn1", "dgn2", "move", "alternate", "link"
     ]
 
+    # Name of file storing licence...
+    LICENCE_FILE_NAME = "LICENSE.txt"
+
     @classmethod
-    def build_theme(cls, theme_name: str, cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
         theme_dir = directory / theme_name
         theme_dir.mkdir(exist_ok=True)
 
@@ -287,8 +303,19 @@ class WindowsThemeBuilder(CursorThemeBuilder):
         cursor_list = "\n".join([f'"{file_name}"' for file_name in cursor_names.values()])
         cursor_reg_list = "\n".join([f'{name} = "{file_name}"' for name, file_name in cursor_names.items()])
 
-        inf_file = WINDOWS_INF_FILE.format(name=theme_name, reg_list=reg_list, cursor_list=cursor_list,
-                                           cursor_reg_list=cursor_reg_list)
+        licence_text = metadata.get("licence")
+        if(licence_text is not None):
+            with (theme_dir / cls.LICENCE_FILE_NAME).open("w") as f:
+                f.write(licence_text)
+            licence_info = f"[Scheme.Txt]\n{cls.LICENCE_FILE_NAME}"
+        else:
+            licence_info = ""
+
+        author = metadata.get("author", None)
+        author = "" if(author is None) else f" by {author}"
+
+        inf_file = WINDOWS_INF_FILE.format(name=theme_name, author=author, reg_list=reg_list, cursor_list=cursor_list,
+                                           licence_txt=licence_info, cursor_reg_list=cursor_reg_list)
 
         with (theme_dir / "install.inf").open("w") as f:
             f.write(inf_file)
@@ -296,6 +323,54 @@ class WindowsThemeBuilder(CursorThemeBuilder):
     @classmethod
     def get_name(cls):
         return "windows"
+
+
+class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
+
+    # Converts cursor names to correct mac cursors
+    LINUX_TO_MAC_CUR = {
+        "default": ("com.apple.coregraphics.Arrow", "com.apple.coregraphics.ArrowCtx", "com.apple.coregraphics.Move"),
+        "alias": ("com.apple.coregraphics.Alias", "com.apple.cursor.2"),
+        "wait": ("com.apple.coregraphics.Wait",),
+        "text": ("com.apple.coregraphics.IBeam", "com.apple.coregraphics.IBeamXOR"),
+        "no-drop": ("com.apple.cursor.3",),
+        "progress": ("com.apple.cursor.4",),
+        "copy": ("com.apple.cursor.5",),
+        "crosshair": ("com.apple.cursor.7", "com.apple.cursor.8"),
+        "dnd-move": ("com.apple.cursor.11",),
+        "openhand": ("com.apple.cursor.12",),
+        "pointer": ("com.apple.cursor.13",),
+        "left_side": ("com.apple.cursor.17",),
+        "right_side": ("com.apple.cursor.18",),
+        "col-resize": ("com.apple.cursor.19",),
+        "top_side": ("com.apple.cursor.21",),
+        "bottom_side": ("com.apple.cursor.22",),
+        "row-resize": ("com.apple.cursor.23",),
+        "context-menu": ("com.apple.cursor.24",),
+        "pirate": ("com.apple.cursor.25",),
+        "vertical-text": ("com.apple.cursor.26",),
+        "right-arrow": ("com.apple.cursor.27",),
+        "size_hor": ("com.apple.cursor.28",),
+        "size_bdiag": ("com.apple.cursor.30",),
+        "up-arrow": ("com.apple.cursor.31",),
+        "size_ver": ("com.apple.cursor.32",),
+        "size_fdiag": ("com.apple.cursor.34",),
+        "down-arrow": ("com.apple.cursor.36",),
+        "left-arrow": ("com.apple.cursor.38",),
+        "all-scroll": ("com.apple.cursor.39",),
+        "help": ("com.apple.cursor.40",),
+        "cell": ("com.apple.cursor.41", "com.apple.cursor.20"),
+        "zoom-in": ("com.apple.cursor.42",),
+        "zoom-out": ("com.apple.cursor.43",)
+    }
+
+    @classmethod
+    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+        pass
+
+    @classmethod
+    def get_name(cls):
+        return "mousecape_macos"
 
 
 def get_theme_builders() -> List[Type[CursorThemeBuilder]]:
