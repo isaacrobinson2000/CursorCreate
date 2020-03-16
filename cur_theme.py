@@ -1,6 +1,13 @@
+import copy
+import plistlib
 from abc import ABC, abstractmethod
+from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Type, Any
+from typing import Dict, List, Type, Any, Tuple
+
+import numpy as np
+from PIL import Image
+
 from cursor import AnimatedCursor
 from xcur_format import XCursorFormat
 from cur_format import CurFormat
@@ -364,9 +371,89 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
         "zoom-out": ("com.apple.cursor.43",)
     }
 
+    CURSOR_EXPORT_SIZES = [(32, 32), (64, 64), (160, 160)]
+    HOTSPOT_ADJUSTMENT_FACTOR = (0.5, 0.5)
+
+    Vec2D = Tuple[int, int]
+
+    @classmethod
+    def __unify_frames(cls, cur: AnimatedCursor) -> Tuple[int, float, Vec2D, Vec2D, List[Image.Image]]:
+        cur = copy.deepcopy(cur)
+        delays = np.array([delay for sub_cur, delay in cur])
+        cumulative_delay = np.cumsum(delays)
+        half_avg = int(np.mean(delays) / 4)
+        gcd_of_em = np.gcd.reduce(delays)
+
+        unified_delay = max(gcd_of_em, half_avg)
+        num_frames = cumulative_delay[-1] // unified_delay
+
+        cur.normalize(cls.CURSOR_EXPORT_SIZES)
+        new_images = [Image.new("RGBA", ((size[0] * 2) - 1, ((size[1] * 2) - 1) * num_frames), (0,0,0,0)) for size in
+                      cls.CURSOR_EXPORT_SIZES]
+
+        next_ani_frame = 1
+        for current_out_frame in range(num_frames):
+            time_in = current_out_frame * unified_delay
+            while((next_ani_frame < len(cumulative_delay)) and (time_in >= cumulative_delay[next_ani_frame])):
+                next_ani_frame += 1
+
+            for i, img in enumerate(new_images):
+                current_size = cls.CURSOR_EXPORT_SIZES[i]
+                current_cur = cur[next_ani_frame - 1][0][current_size]
+                x_off = current_size[0] - (current_cur.hotspot[0] + 1)
+                y_off = ((current_size[0] * 2 - 1) * current_out_frame) + (current_size[0] - (current_cur.hotspot[1] + 1))
+                img.paste(current_cur.image, (x_off, y_off))
+
+        final_hotspot = (cls.CURSOR_EXPORT_SIZES[0][0] - 1, cls.CURSOR_EXPORT_SIZES[0][1] - 1)
+        final_dims = (cls.CURSOR_EXPORT_SIZES[0][0] * 2 - 1, cls.CURSOR_EXPORT_SIZES[0][1] * 2 - 1)
+
+        return (int(num_frames), float(unified_delay) / 1000, final_hotspot, final_dims, new_images)
+
+
     @classmethod
     def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
-        pass
+        author = metadata.get("author", None)
+
+        auth_str = "unknown" if(author is None) else "".join(author.lower().split())
+        theme_str = "".join(theme_name.lower().split())
+
+        plist_data = {
+            "Author": author if(author is not None) else "",
+            "CapeName": theme_name,
+            "CapeVersion": 1.0,
+            "Cloud": True,
+            "Cursors": {},
+            "HiDPI": True,
+            "Identifier": ".".join(["com", auth_str, theme_str]),
+            "MinimumVersion": 2.0,
+            "Version": 2.0
+        }
+
+        for name, cur in cursor_dict.items():
+            if(name in cls.LINUX_TO_MAC_CUR):
+                mac_names = cls.LINUX_TO_MAC_CUR[name]
+                num_frames, delay_secs, hotspot, size, images = cls.__unify_frames(cur)
+                representations = []
+
+                for img in images:
+                    b = BytesIO()
+                    img.save(b, "png")
+                    representations.append(b.getvalue())
+
+                for mac_name in mac_names:
+                    plist_data["Cursors"][mac_name] = {
+                        "FrameCount": num_frames,
+                        "FrameDuration": delay_secs,
+                        "HotSpotX": float(hotspot[0]),
+                        "HotSpotY": float(hotspot[1]),
+                        "PointsWide": float(size[0]),
+                        "PointsHigh": float(size[1]),
+                        "Representations": representations
+                    }
+
+        with (directory / (theme_name + ".cape")).open("wb") as cape:
+            plistlib.dump(plist_data, cape, fmt=plistlib.FMT_XML, sort_keys=True)
+
 
     @classmethod
     def get_name(cls):
