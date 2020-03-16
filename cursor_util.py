@@ -1,11 +1,10 @@
 from io import BytesIO
 from typing import BinaryIO
+
 from cursor import AnimatedCursor, Cursor, CursorIcon
 import cairosvg
 from PIL import Image, UnidentifiedImageError, ImageOps
-import ani_format
-import cur_format
-import xcur_format
+import format_core
 from xml.etree import ElementTree
 from PIL import ImageSequence
 
@@ -108,9 +107,10 @@ def load_cursor_from_cursor(file: BinaryIO) -> AnimatedCursor:
     :param file: The file handler pointing to the SVG data.
     :return: An AnimatedCursor object, representing an animated cursor. Static cursors will only have 1 frame.
     """
-    # Currently supported cursor formats... TODO: Consider replacing with __subclasses__() for more flexibility..
-    ani_cur_readers = [ani_format.AniFormat, xcur_format.XCursorFormat]
-    cur_readers = [cur_format.CurFormat]
+    # Currently supported cursor formats...
+    import ani_format, cur_format, xcur_format
+    ani_cur_readers = format_core.AnimatedCursorStorageFormat.__subclasses__()
+    cur_readers = format_core.CursorStorageFormat.__subclasses__()
 
     file.seek(0)
     magic = file.read(12)
@@ -156,4 +156,3 @@ def load_cursor(file: BinaryIO):
                 return load_cursor_from_svg(file)
             except ElementTree.ParseError:
                 raise ValueError("Unable to open file by any specified methods...")
-

@@ -334,7 +334,9 @@ class WindowsThemeBuilder(CursorThemeBuilder):
 
 class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
     """
-
+    Cursor theme builder for the MacOS platform. MacOS doesn't natively support themes, so we actually build a .cape
+    file for the Mousecape software on Mac, which allows the user to change cursors. A cape file is a mac plist
+    format(xml) containing each cursor as a dictionary. Animated images are stored vertically, in tiles.
     """
 
     # Converts cursor names to correct mac cursors
@@ -375,12 +377,23 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
     }
 
     CURSOR_EXPORT_SIZES = [(32, 32), (64, 64), (160, 160)]
-    HOTSPOT_ADJUSTMENT_FACTOR = (0.5, 0.5)
 
     Vec2D = Tuple[int, int]
 
     @classmethod
     def __unify_frames(cls, cur: AnimatedCursor) -> Tuple[int, float, Vec2D, Vec2D, List[Image.Image]]:
+        """
+        Private method, takes a cursor and converts it into a vertically tiled image with a single delay and single
+        hotspot. Uses some hacky shenanigans to do this. :)......
+
+        :param cur: An AnimatedCursor
+        :return: A tuple with:
+                    - Integer: Number of frames
+                    - Float: Delay in seconds for each frame.
+                    - Vec2D: Hotspot location.
+                    - Vec2D: Size of image
+                    - List[PIL.Image]: Image representations, at 1x, 2x, and 5x...
+        """
         cur = copy.deepcopy(cur)
         delays = np.array([delay for sub_cur, delay in cur])
         cumulative_delay = np.cumsum(delays)
@@ -391,7 +404,7 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
         num_frames = cumulative_delay[-1] // unified_delay
 
         cur.normalize(cls.CURSOR_EXPORT_SIZES)
-        new_images = [Image.new("RGBA", ((size[0] * 2) - 1, ((size[1] * 2) - 1) * num_frames), (0,0,0,0)) for size in
+        new_images = [Image.new("RGBA", (size[0] * 2, (size[1] * 2) * num_frames), (0,0,0,0)) for size in
                       cls.CURSOR_EXPORT_SIZES]
 
         next_ani_frame = 1
@@ -403,12 +416,12 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
             for i, img in enumerate(new_images):
                 current_size = cls.CURSOR_EXPORT_SIZES[i]
                 current_cur = cur[next_ani_frame - 1][0][current_size]
-                x_off = current_size[0] - (current_cur.hotspot[0] + 1)
-                y_off = ((current_size[0] * 2 - 1) * current_out_frame) + (current_size[0] - (current_cur.hotspot[1] + 1))
+                x_off = current_size[0] - current_cur.hotspot[0]
+                y_off = ((current_size[1] * 2) * current_out_frame) + (current_size[1] - current_cur.hotspot[1])
                 img.paste(current_cur.image, (x_off, y_off))
 
-        final_hotspot = (cls.CURSOR_EXPORT_SIZES[0][0] - 1, cls.CURSOR_EXPORT_SIZES[0][1] - 1)
-        final_dims = (cls.CURSOR_EXPORT_SIZES[0][0] * 2 - 1, cls.CURSOR_EXPORT_SIZES[0][1] * 2 - 1)
+        final_hotspot = (cls.CURSOR_EXPORT_SIZES[0][0], cls.CURSOR_EXPORT_SIZES[0][1])
+        final_dims = (cls.CURSOR_EXPORT_SIZES[0][0] * 2, cls.CURSOR_EXPORT_SIZES[0][1] * 2)
 
         return (int(num_frames), float(unified_delay) / 1000, final_hotspot, final_dims, new_images)
 
