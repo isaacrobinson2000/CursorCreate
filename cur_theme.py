@@ -333,6 +333,9 @@ class WindowsThemeBuilder(CursorThemeBuilder):
 
 
 class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
+    """
+
+    """
 
     # Converts cursor names to correct mac cursors
     LINUX_TO_MAC_CUR = {
@@ -450,6 +453,12 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
                         "PointsHigh": float(size[1]),
                         "Representations": representations
                     }
+
+        licence = metadata.get("licence", None)
+
+        if(licence is not None):
+            with (directory / "LICENSE.txt").open("w") as l:
+                l.write(licence)
 
         with (directory / (theme_name + ".cape")).open("wb") as cape:
             plistlib.dump(plist_data, cape, fmt=plistlib.FMT_XML, sort_keys=True)
