@@ -1,0 +1,292 @@
+{
+    "format": "cursor_build_file",
+    "version": 1,
+    "metadata": {
+        "author": "Isaac Robinson",
+        "licence": null
+    },
+    "data": [
+        {
+            "cursor_name": "alias",
+            "cursor_file": "alias.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "all-scroll",
+            "cursor_file": "all-scroll.svg",
+            "hotspots_64": [[32, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "bottom_left_corner",
+            "cursor_file": "bottom_left_corner.svg",
+            "hotspots_64": [[0, 63]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "bottom_right_corner",
+            "cursor_file": "bottom_right_corner.svg",
+            "hotspots_64": [[63, 63]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "bottom_side",
+            "cursor_file": "bottom_side.svg",
+            "hotspots_64": [[32, 63]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "cell",
+            "cursor_file": "cell.svg",
+            "hotspots_64": [[32, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "center_ptr",
+            "cursor_file": "center_ptr.svg",
+            "hotspots_64": [[32, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "col-resize",
+            "cursor_file": "col-resize.svg",
+            "hotspots_64": [[32, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "color-picker",
+            "cursor_file": "color-picker.svg",
+            "hotspots_64": [[0, 63]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "context-menu",
+            "cursor_file": "context-menu.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "copy",
+            "cursor_file": "copy.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "crosshair",
+            "cursor_file": "crosshair.svg",
+            "hotspots_64": [[32, 31]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "default",
+            "cursor_file": "default.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "dnd-move",
+            "cursor_file": "dnd-move.svg",
+            "hotspots_64": [[33, 29]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "dnd-no-drop",
+            "cursor_file": "dnd-no-drop.svg",
+            "hotspots_64": [[33, 28]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "down-arrow",
+            "cursor_file": "down-arrow.svg",
+            "hotspots_64": [[31, 53]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "draft",
+            "cursor_file": "draft.svg",
+            "hotspots_64": [[2, 2]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "fleur",
+            "cursor_file": "fleur.svg",
+            "hotspots_64": [[32, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "help",
+            "cursor_file": "help.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "left-arrow",
+            "cursor_file": "left-arrow.svg",
+            "hotspots_64": [[7, 30]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "left_side",
+            "cursor_file": "left_side.svg",
+            "hotspots_64": [[0, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "no-drop",
+            "cursor_file": "no-drop.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "not-allowed",
+            "cursor_file": "not-allowed.svg",
+            "hotspots_64": [[32, 31]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "openhand",
+            "cursor_file": "openhand.svg",
+            "hotspots_64": [[35, 34]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "pencil",
+            "cursor_file": "pencil.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "pirate",
+            "cursor_file": "pirate.svg",
+            "hotspots_64": [[32, 28]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "pointer",
+            "cursor_file": "pointer.svg",
+            "hotspots_64": [[28, 9]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "progress",
+            "cursor_file": "progress.svg",
+            "hotspots_64": [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+            "delays": [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+        },
+        {
+            "cursor_name": "right-arrow",
+            "cursor_file": "right-arrow.svg",
+            "hotspots_64": [[54, 31]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "right_ptr",
+            "cursor_file": "right_ptr.svg",
+            "hotspots_64": [[63, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "right_side",
+            "cursor_file": "right_side.svg",
+            "hotspots_64": [[63, 31]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "row-resize",
+            "cursor_file": "row-resize.svg",
+            "hotspots_64": [[32, 31]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "size_bdiag",
+            "cursor_file": "size_bdiag.svg",
+            "hotspots_64": [[32, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "size_fdiag",
+            "cursor_file": "size_fdiag.svg",
+            "hotspots_64": [[32, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "size_hor",
+            "cursor_file": "size_hor.svg",
+            "hotspots_64": [[31, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "size_ver",
+            "cursor_file": "size_ver.svg",
+            "hotspots_64": [[32, 32]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "text",
+            "cursor_file": "text.svg",
+            "hotspots_64": [[32, 33]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "top_left_corner",
+            "cursor_file": "top_left_corner.svg",
+            "hotspots_64": [[0, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "top_right_corner",
+            "cursor_file": "top_right_corner.svg",
+            "hotspots_64": [[63, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "top_side",
+            "cursor_file": "top_side.svg",
+            "hotspots_64": [[31, 0]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "up-arrow",
+            "cursor_file": "up-arrow.svg",
+            "hotspots_64": [[32, 7]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "vertical-text",
+            "cursor_file": "vertical-text.svg",
+            "hotspots_64": [[31, 31]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "wait",
+            "cursor_file": "wait.svg",
+            "hotspots_64": [[32, 31], [32, 31], [32, 31], [32, 31], [32, 31], [32, 31], [32, 31], [32, 31], [32, 31], [32, 31], [32, 31], [32, 31]],
+            "delays": [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+        },
+        {
+            "cursor_name": "wayland-cursor",
+            "cursor_file": "wayland-cursor.svg",
+            "hotspots_64": [[32, 31]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "x-cursor",
+            "cursor_file": "x-cursor.svg",
+            "hotspots_64": [[32, 33]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "zoom-in",
+            "cursor_file": "zoom-in.svg",
+            "hotspots_64": [[21, 18]],
+            "delays": [100]
+        },
+        {
+            "cursor_name": "zoom-out",
+            "cursor_file": "zoom-out.svg",
+            "hotspots_64": [[20, 19]],
+            "delays": [100]
+        }
+    ]
+}
