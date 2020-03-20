@@ -30,6 +30,8 @@ In the GUI, images can simply be dragged and dropped onto the cursor selection w
 
 To save a project, click the "Save Project" button, which will copy the source image files over to the user selected directory and generate a 'build.json' which tells CursorCreate how to turn the image source files into cursor themes for each platform.
 
+For static images and SVGs, the animation frames are expected to be stored horizontally as squares side by side. 
+
 Note that CursorCreate is also capable of doing several actions from the command line, including building cursor themes. To see all the supported command line operations, execute the command below:
 ```bash
 python cursorcreate.py --help
