@@ -1,5 +1,5 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-from cursor_util import load_cursor
+from lib.cursor_util import load_cursor
 from gui.cursorviewer import CursorDisplayWidget
 from urllib.request import urlopen
 from urllib.error import URLError

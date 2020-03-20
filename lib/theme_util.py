@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Dict, Tuple, Union, Any
-import cursor_util
-from cur_theme import get_theme_builders
-from cursor import AnimatedCursor
+from lib import cursor_util
+from lib.cur_theme import get_theme_builders
+from lib.cursor import AnimatedCursor
 from PIL import Image
 import shutil
 import json

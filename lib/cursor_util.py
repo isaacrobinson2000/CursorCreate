@@ -1,10 +1,10 @@
 from io import BytesIO
 from typing import BinaryIO
 
-from cursor import AnimatedCursor, Cursor, CursorIcon
+from lib.cursor import AnimatedCursor, Cursor, CursorIcon
 import cairosvg
 from PIL import Image, ImageOps
-import format_core
+from lib import format_core
 from xml.etree import ElementTree
 from PIL import ImageSequence
 
@@ -113,7 +113,6 @@ def load_cursor_from_cursor(file: BinaryIO) -> AnimatedCursor:
     :return: An AnimatedCursor object, representing an animated cursor. Static cursors will only have 1 frame.
     """
     # Currently supported cursor formats...
-    import ani_format, cur_format, xcur_format
     ani_cur_readers = format_core.AnimatedCursorStorageFormat.__subclasses__()
     cur_readers = format_core.CursorStorageFormat.__subclasses__()
 

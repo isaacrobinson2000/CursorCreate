@@ -2,7 +2,7 @@ from typing import Tuple
 import numpy as np
 from PIL import Image, ImageQt
 from PySide2 import QtWidgets, QtGui, QtCore
-from cursor import AnimatedCursor, Cursor, CursorIcon
+from lib.cursor import AnimatedCursor, Cursor, CursorIcon
 from gui.layouts import FlowLayout
 
 

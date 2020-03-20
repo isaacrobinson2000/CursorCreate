@@ -8,10 +8,10 @@ from typing import Dict, List, Type, Any, Tuple
 import numpy as np
 from PIL import Image
 
-from cursor import AnimatedCursor
-from xcur_format import XCursorFormat
-from cur_format import CurFormat
-from ani_format import AniFormat
+from lib.cursor import AnimatedCursor
+from lib.xcur_format import XCursorFormat
+from lib.cur_format import CurFormat
+from lib.ani_format import AniFormat
 
 
 class CursorThemeBuilder(ABC):

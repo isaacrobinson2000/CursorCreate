@@ -1,5 +1,5 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-from cursor import AnimatedCursor
+from lib.cursor import AnimatedCursor
 from gui.cursorhotspotedit import HotspotEditDialog
 from PIL.ImageQt import ImageQt
 

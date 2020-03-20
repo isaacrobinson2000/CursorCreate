@@ -3,8 +3,8 @@ from typing import BinaryIO, Tuple
 import numpy as np
 from PIL import Image
 
-from cursor import AnimatedCursor, CursorIcon, Cursor
-from format_core import AnimatedCursorStorageFormat, to_int, to_bytes
+from lib.cursor import AnimatedCursor, CursorIcon, Cursor
+from lib.format_core import AnimatedCursorStorageFormat, to_int, to_bytes
 
 
 class XCursorFormat(AnimatedCursorStorageFormat):

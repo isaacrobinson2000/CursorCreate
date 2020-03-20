@@ -4,7 +4,7 @@ available...
 """
 
 from pathlib import Path
-import theme_util
+from lib import theme_util
 import sys
 
 # Attempt to import the gui, if it fails(gui packages missing) set the module to none to let methods below know...
