@@ -8,6 +8,7 @@ from lib import format_core
 from xml.etree import ElementTree
 from PIL import ImageSequence
 
+# Some versions of pillow don't actually have this error, so just set this exception to the general case in this case.
 try:
     from PIL import UnidentifiedImageError
 except ImportError:
@@ -34,7 +35,6 @@ def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
 
     if(hasattr(image, "is_animated") and (image.is_animated)):
         # If this is an animated file, load in each frame as the frames of the cursor (Ex, ".gif")
-        print("Animated...")
         min_dim = min(image.size) # We fit the image to a square...
         images_durations = [(ImageOps.fit(image, (min_dim, min_dim)), frame.info.get("duration", 100))
                             for frame in ImageSequence.Iterator(image)]
@@ -46,7 +46,6 @@ def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
         if(num_frames == 0):
             raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
 
-        print("Not animated!!!")
         images_durations = [(image.crop((i * height, 0, i * height + height, height)), 100) for i in range(num_frames)]
 
     # Now convert images into the cursors, resizing them to match all the default sizes...
