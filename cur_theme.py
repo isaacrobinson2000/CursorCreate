@@ -369,7 +369,7 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
         "size_fdiag": ("com.apple.cursor.34",),
         "down-arrow": ("com.apple.cursor.36",),
         "left-arrow": ("com.apple.cursor.38",),
-        "all-scroll": ("com.apple.cursor.39",),
+        "fleur": ("com.apple.cursor.39",),
         "help": ("com.apple.cursor.40",),
         "cell": ("com.apple.cursor.41", "com.apple.cursor.20"),
         "zoom-in": ("com.apple.cursor.42",),

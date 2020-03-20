@@ -3,10 +3,15 @@ from typing import BinaryIO
 
 from cursor import AnimatedCursor, Cursor, CursorIcon
 import cairosvg
-from PIL import Image, UnidentifiedImageError, ImageOps
+from PIL import Image, ImageOps
 import format_core
 from xml.etree import ElementTree
 from PIL import ImageSequence
+
+try:
+    from PIL import UnidentifiedImageError
+except ImportError:
+    UnidentifiedImageError = Exception
 
 
 # Default sizes which all cursors loaded with this module are normalized with...

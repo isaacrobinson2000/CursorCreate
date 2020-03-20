@@ -14,9 +14,7 @@ class CursorSelectWidget(QtWidgets.QFrame):
     def __init__(self, parent=None, label_text="Label", def_cursor=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        self.setFrameStyle(QtWidgets.QFrame.StyledPanel | QtWidgets.QFrame.Raised)
-        self.setLineWidth(3)
-        self.setMidLineWidth(0)
+        self.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
 
         self._main_layout = QtWidgets.QVBoxLayout()
         self._label = QtWidgets.QLabel(label_text)
@@ -25,9 +23,20 @@ class CursorSelectWidget(QtWidgets.QFrame):
         self._file_sel_btn = QtWidgets.QPushButton("Select File")
         self._current_file = None
 
+        # Make a frame to wrap around the hotspot picker and add a border...
+        self._frame = QtWidgets.QFrame()
+        self._f_lay = QtWidgets.QVBoxLayout()
+        self._f_lay.setMargin(0)
+        self._f_lay.addWidget(self._viewer)
+        self._frame.setLayout(self._f_lay)
+        self._frame.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self._frame.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
         self._main_layout.addWidget(self._label)
-        self._main_layout.addWidget(self._viewer)
+        self._main_layout.addWidget(self._frame)
         self._main_layout.addWidget(self._file_sel_btn)
+
+        self._main_layout.setAlignment(self._frame, QtCore.Qt.AlignHCenter)
 
         self.setLayout(self._main_layout)
         self.setAcceptDrops(True)
@@ -53,7 +62,6 @@ class CursorSelectWidget(QtWidgets.QFrame):
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent):
         self.dragEnterEvent(event)
-
 
     def dropEvent(self, event: QtGui.QDropEvent):
         if(event.mimeData().hasUrls()):

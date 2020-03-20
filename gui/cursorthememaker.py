@@ -139,6 +139,9 @@ class CursorThemeMaker(QtWidgets.QWidget):
                     files_and_cursors[cursor_name] = (c_f_path, selector.current_cursor)
 
             theme_util.save_project(theme_name, theme_dir, self._metadata, files_and_cursors)
+            self._open_build_project = str((Path(theme_dir) / theme_name) / "build.json")
+            self._update_proj_btn.setEnabled(True)
+            self._build_in_place.setEnabled(True)
 
     def build_project(self):
         dir_picker = DirectoryPicker(self, "Select Directory to Build Project In")

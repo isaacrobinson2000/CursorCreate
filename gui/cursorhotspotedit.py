@@ -94,10 +94,7 @@ class CursorHotspotWidget(QtWidgets.QWidget):
         if(not (isinstance(value, Tuple) and len(value) == 2)):
             raise ValueError("Not a coordinate pair!")
 
-        if (not (0 <= value[0] < self.VIEW_SIZE[0])):
-            return
-        if (not (0 <= value[1] < self.VIEW_SIZE[1])):
-            return
+        value = min(max(0, value[0]), self.VIEW_SIZE[0] - 1), min(max(0, value[1]), self.VIEW_SIZE[1] - 1)
 
         for size in self._cursor[self._frame][0]:
             x_rat, y_rat = size[0] / self.VIEW_SIZE[0], size[1] / self.VIEW_SIZE[1]
@@ -112,7 +109,7 @@ class CursorHotspotWidget(QtWidgets.QWidget):
         return self._cursor
 
 
-class CursorEditWidget(QtWidgets.QWidget):
+class CursorEditWidget(QtWidgets.QFrame):
 
     userDelayChange = QtCore.Signal((int,))
     userHotspotChange = QtCore.Signal((int, int))
@@ -126,10 +123,20 @@ class CursorEditWidget(QtWidgets.QWidget):
         self._delay_adjuster.setRange(0, 0xFFFF)
         self._delay_adjuster.setSingleStep(1)
 
-        self._main_layout.addWidget(self._hotspot_picker)
+        self._frame = QtWidgets.QFrame()
+        self._f_lay = QtWidgets.QVBoxLayout()
+        self._f_lay.setMargin(0)
+        self._f_lay.addWidget(self._hotspot_picker)
+        self._frame.setLayout(self._f_lay)
+        self._frame.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self._frame.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
+        self._main_layout.addWidget(self._frame)
+        self._main_layout.setAlignment(self._frame, QtCore.Qt.AlignHCenter)
         self._main_layout.addWidget(self._delay_adjuster)
 
         self.setLayout(self._main_layout)
+        self.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
 
         # Copy properties from the hotspot picking widget...
         self._hotspot_picker.userHotspotChange.connect(lambda x, y: self.userHotspotChange.emit(x, y))
