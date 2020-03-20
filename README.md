@@ -1,7 +1,7 @@
 # CursorCreate
 A Multi-platform Cursor Theme Building Program. 
 
-CursorCreate allows you to build cursor themes for Windows, MacOS, and Linux. It supports reading cursors from svg, xcur, cur, ani, and all image formats supported by the pillow imaging library. Also includes a gui for easlily modifying cursor projects.
+CursorCreate allows you to build cursor themes for Windows, MacOS, and Linux. It supports reading cursors from svg, xcur, cur, ani, and all image formats supported by the pillow imaging library. Also includes a gui for easily modifying cursor projects.
 
 ### Installing
 
@@ -11,7 +11,7 @@ To install CursorCreate from source, you will need the following dependencies:
  - numpy
  - PySide2
 
-Once all of these dependencies are installed in your python environment (using a virtual environment is recomended) you can pull down this repository using a git clone as below:
+Once all of these dependencies are installed in your python environment (using a virtual environment is recommended) you can pull down this repository using a git clone as below:
 
 ```bash
 git clone https://github.com/isaacrobinson2000/CursorCreate.git
