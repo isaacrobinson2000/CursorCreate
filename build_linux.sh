@@ -1,0 +1,1 @@
+pyinstaller --onefile --name CursorCreate --clean cursorcreate.py

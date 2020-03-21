@@ -298,10 +298,12 @@ class DirectoryPicker(QtWidgets.QDialog):
 class MetaDataEdit(QtWidgets.QDialog):
 
     FILE_PICKER_FILTER = "Text Files (*.txt)"
+    TITLE = "CursorCreate Metadata"
 
     def __init__(self, parent=None, metadata: Dict[str, Any]=None):
         super().__init__(parent)
         super().setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint)
+        self.setWindowTitle(self.TITLE)
 
         if(metadata is None):
             self._metadata = {"author": None, "licence": None}
