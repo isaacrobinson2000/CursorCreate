@@ -21,7 +21,7 @@ git clone https://github.com/isaacrobinson2000/CursorCreate.git
 
 ### Example Theme
 
-This program also comes with a template theme, but due to seperate licensing the template theme is kept in a seperate repository. Follow the link below to get the template theme:
+This program also comes with a template theme, but due to separate licensing the template theme is kept in a separate repository. Follow the link below to get the template theme:
 
 [https://github.com/isaacrobinson2000/CursorCreateTemplateTheme](https://github.com/isaacrobinson2000/CursorCreateTemplateTheme)
 
