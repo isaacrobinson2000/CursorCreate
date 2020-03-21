@@ -1,9 +1,11 @@
 # CursorCreate
 A Multi-platform Cursor Theme Building Program. 
 
-CursorCreate allows you to build cursor themes for Windows, MacOS, and Linux. It supports reading cursors from svg, xcur, cur, ani, and all image formats supported by the pillow imaging library. Also includes a gui for easily modifying cursor projects.
+CursorCreate allows you to build cursor themes for Windows, MacOS, and Linux. It supports reading cursors from svg, xcur, cur, ani, and all image formats supported by the Pillow imaging library. Also includes a GUI for easily modifying cursor projects.
 
 ### Installing
+
+#### From Source:
 
 To install CursorCreate from source, you will need the following dependencies:
  - CairoSVG
@@ -16,6 +18,12 @@ Once all of these dependencies are installed in your python environment (using a
 ```bash
 git clone https://github.com/isaacrobinson2000/CursorCreate.git
 ```
+
+### Example Theme
+
+This program also comes with a template theme, but due to seperate licensing the template theme is kept in a seperate repository. Follow the link below to get the template theme:
+
+[https://github.com/isaacrobinson2000/CursorCreateTemplateTheme](https://github.com/isaacrobinson2000/CursorCreateTemplateTheme)
 
 ### How to Use
 
