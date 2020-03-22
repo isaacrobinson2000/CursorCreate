@@ -1,1 +1,1 @@
-pyinstaller --hidden-import="pkg_resources.py2_warn" --name CursorCreate --icon icon_windows.ico --windowed --onefile --clean cursorcreate.py
+pyinstaller --hidden-import="pkg_resources.py2_warn" --add-binary "cairo.lib" --name CursorCreate --icon icon_windows.ico --windowed --onefile --clean cursorcreate.py
