@@ -16,7 +16,7 @@ if(sys.platform.startswith("linux")):
 elif(sys.platform.startswith("darwin")):
     icon = str(spec_root / "icon_mac.icns")
 elif(sys.platform.startswith("win32")):
-    icon = str(spec_root / icon_windows.ico")
+    icon = str(spec_root / "icon_windows.ico")
 else:
     raise ValueError("Spec file doesn't support " + sys.platform)
 
@@ -30,9 +30,9 @@ def get_version_file(pkg):
     return str((Path(pkg.__file__).resolve().parent) / "VERSION")
 
 datas = [
-    (get_version_file(cairocffi), "cairocffi")
-    (get_version_file(cairosvg), ".")
-    (get_version_file(cssselect2), "cssselect2")
+    (get_version_file(cairocffi), "cairocffi"),
+    (get_version_file(cairosvg), "."),
+    (get_version_file(cssselect2), "cssselect2"),
     (get_version_file(tinycss2), "tinycss2")
 ]
 
