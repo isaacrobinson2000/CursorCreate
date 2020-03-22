@@ -1,1 +1,1 @@
-pyinstaller --onefile --name CursorCreate --clean cursorcreate.py
+pyinstaller --hidden-import="pkg_resources.py2_warn" --onefile --name CursorCreate --clean cursorcreate.py

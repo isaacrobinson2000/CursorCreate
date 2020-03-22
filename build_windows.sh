@@ -1,0 +1,1 @@
+pyinstaller --hidden-import="pkg_resources.py2_warn" --name CursorCreate --icon icon_windows.ico --windowed --onefile --clean cursorcreate.py

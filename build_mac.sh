@@ -1,1 +1,1 @@
-pyinstaller --name CursorCreate --icon icon_mac.icns --windowed --onefile --clean cursorcreate.py
+pyinstaller --hidden-import="pkg_resources.py2_warn" --name CursorCreate --icon icon_mac.icns --windowed --onefile --clean cursorcreate.py
