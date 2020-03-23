@@ -14,7 +14,7 @@ if(sys.platform.startswith("linux")):
     icon = None
     cairo_lib = Path("/usr/lib") / cairo_lib
 elif(sys.platform.startswith("darwin")):
-    icon = str(spec_root / "icon_mac.icns")
+    icon = None
     cairo_lib = Path(cairo_lib)
 elif(sys.platform.startswith("win32")):
     icon = str(spec_root / "icon_windows.ico")
@@ -93,3 +93,13 @@ exe = EXE(
     console = False,
     icon=icon
 )
+
+if(sys.platform.startswith("darwin")):
+    app = BUNDLE(
+        exe,
+        name="CursorCreate.app",
+        icon=str(spec_root / "icon_mac.icns"),
+        bundle_identifier=None
+    )
+        
+    
