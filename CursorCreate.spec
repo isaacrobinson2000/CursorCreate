@@ -59,6 +59,10 @@ binaries = [
     (str(cairo_lib), "cairocffi"),
 ]
 
+if(sys.platform.startswith("darwin")):
+    pixman = ctypes.util.find_library("pixman-1.0")
+    binaries.append((pixman, "cairocffi"))
+
 a = Analysis(
     ['cursorcreate.py'],
     pathex = [str(spec_root)],
@@ -101,5 +105,5 @@ if(sys.platform.startswith("darwin")):
         icon=str(spec_root / "icon_mac.icns"),
         bundle_identifier=None
     )
-        
+
     
