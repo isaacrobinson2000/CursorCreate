@@ -5,6 +5,13 @@ CursorCreate allows you to build cursor themes for Windows, MacOS, and Linux. It
 
 ### Installing
 
+#### Packaged Binaries:
+
+If you would like to avoid going through the process of installing from source, pre-built binaries have been provided on the releases page. Just download the one for your platform, extract the zip file, and run the executable inside the extracted folder. 
+
+Releases Page:
+[https://github.com/isaacrobinson2000/CursorCreate/releases](https://github.com/isaacrobinson2000/CursorCreate/releases)
+
 #### From Source:
 
 To install CursorCreate from source, you will need the following dependencies:
@@ -18,6 +25,8 @@ Once all of these dependencies are installed in your python environment (using a
 ```bash
 git clone https://github.com/isaacrobinson2000/CursorCreate.git
 ```
+
+If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment, and staticx installed on the global python environment if you plan on building on linux. Use the build scripts provided with this project, as the binary will not have all of the required files and dependancies packaged with it otherwise. 
 
 ### Example Theme
 
