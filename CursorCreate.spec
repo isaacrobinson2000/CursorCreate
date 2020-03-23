@@ -12,11 +12,13 @@ cairo_lib = ctypes.util.find_library("cairo")
 
 if(sys.platform.startswith("linux")):
     icon = None
-    cairo_lib = str(Path("/usr/lib") / cairo_lib)
+    cairo_lib = Path("/usr/lib") / cairo_lib
 elif(sys.platform.startswith("darwin")):
     icon = str(spec_root / "icon_mac.icns")
+    cairo_lib = Path(cairo_lib)
 elif(sys.platform.startswith("win32")):
     icon = str(spec_root / "icon_windows.ico")
+    cairo_lib = Path(cairo_lib)
 else:
     raise ValueError("Spec file doesn't support " + sys.platform)
 
@@ -25,6 +27,22 @@ import cairocffi
 import cairosvg
 import cssselect2
 import tinycss2
+
+# We have to hack the cairocffi package to use the internally stored library...
+def hack_cairocffi(c_pkg):
+    init_path = Path(c_pkg.__file__)
+
+    with init_path.open() as rf:
+        data = rf.readlines()
+
+    for i, line in enumerate(data):
+        if(line.startswith("cairo =")):
+            data[i + 2] = f"    (str(Path(__file__).parent / {cairo_lib.name}), 'libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll'))\n"
+
+    with init_path.open("w") as wf:
+        wf.writelines(data)
+
+
 
 def get_version_file(pkg):
     return str((Path(pkg.__file__).resolve().parent) / "VERSION")
@@ -37,7 +55,7 @@ datas = [
 ]
 
 binaries = [
-    (cairo_lib, "."),
+    (str(cairo_lib), "cairocffi"),
 ]
 
 a = Analysis(
