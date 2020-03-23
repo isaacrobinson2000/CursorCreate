@@ -36,13 +36,14 @@ def hack_cairocffi(c_pkg):
         data = rf.readlines()
 
     for i, line in enumerate(data):
-        if(line.startswith("cairo =")):
-            data[i + 2] = f"    (str(Path(__file__).parent / {cairo_lib.name}), 'libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll'))\n"
+        if(line.startswith("cairo")):
+            data[i + 2] = f"    (str(Path(__file__).parent / '{cairo_lib.name}'), 'libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll'))\n"
 
     with init_path.open("w") as wf:
+        print(data)
         wf.writelines(data)
 
-
+hack_cairocffi(cairocffi)
 
 def get_version_file(pkg):
     return str((Path(pkg.__file__).resolve().parent) / "VERSION")
