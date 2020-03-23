@@ -61,7 +61,7 @@ binaries = [
 
 if(sys.platform.startswith("darwin")):
     pixman = ctypes.util.find_library("pixman-1.0")
-    binaries.append((pixman, "cairocffi"))
+    binaries.append((pixman, "."))
 
 a = Analysis(
     ['cursorcreate.py'],
