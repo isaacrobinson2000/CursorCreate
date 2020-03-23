@@ -72,7 +72,10 @@ if(sys.platform.startswith("darwin")):
         "libxcb-render.0",
         "libXrender.1",
         "libX11.6",
-        "libXext.6"
+        "libXext.6",
+        "libuuid.16",
+        "libXau.6",
+        "libXdmcp.6"
     ]
     
     f_lib = ctypes.util.find_library
