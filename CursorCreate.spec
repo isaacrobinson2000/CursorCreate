@@ -60,7 +60,20 @@ binaries = [
 ]
 
 if(sys.platform.startswith("darwin")):
-    libs = ["pixman-1.0", "fontconfig.1", "libpng16.16", "libz.1"]
+    libs = [
+        "libcairo.2",
+        "pixman-1.0", 
+        "fontconfig.1", 
+        "libpng16.16", 
+        "libz.1",
+        "libfreetype.6",
+        "libX11-xcb.1",
+        "libxcb.1",
+        "libxcb-render.0",
+        "libXrender.1",
+        "libX11.6",
+        "libXext.6"
+    ]
     
     f_lib = ctypes.util.find_library
     binaries.extend([(f_lib(name), ".") for name in libs])
