@@ -60,9 +60,10 @@ binaries = [
 ]
 
 if(sys.platform.startswith("darwin")):
-    pixman = ctypes.util.find_library("pixman-1.0")
-    fontconfig = ctypes.util.find_library("fontconfig.1")
-    binaries.extend([(pixman, "."), (fontconfig, ".")])
+    libs = ["pixman-1.0", "fontconfig.1", "libpng16.16", "libz.1"]
+    
+    f_lib = ctypes.util.find_library
+    binaries.extend([(f_lib(name), ".") for name in libs])
 
 a = Analysis(
     ['cursorcreate.py'],
