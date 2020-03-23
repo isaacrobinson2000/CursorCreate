@@ -26,7 +26,7 @@ Once all of these dependencies are installed in your python environment (using a
 git clone https://github.com/isaacrobinson2000/CursorCreate.git
 ```
 
-If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment, and staticx installed on the global python environment if you plan on building on linux. Use the build scripts provided with this project, as the binary will not have all of the required files and dependancies packaged with it otherwise. 
+If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment, and staticx installed on the global python environment if you plan on building on linux. Use the build scripts provided with this project, as the binary will not have all of the required files and dependencies packaged with it otherwise. 
 
 ### Example Theme
 
