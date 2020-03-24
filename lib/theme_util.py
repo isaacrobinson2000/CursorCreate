@@ -26,9 +26,12 @@ def build_theme(theme_name: str, directory: Path, metadata: Dict[str, Any], curs
     theme_builders = get_theme_builders()
 
     for theme_builder in theme_builders:
-        ext_dir = build_theme_in / theme_builder.get_name()
-        ext_dir.mkdir(exist_ok=True)
-        theme_builder.build_theme(theme_name, metadata, cursor_dict, ext_dir)
+        try:
+            ext_dir = build_theme_in / theme_builder.get_name()
+            ext_dir.mkdir(exist_ok=True)
+            theme_builder.build_theme(theme_name, metadata, cursor_dict, ext_dir)
+        except Exception as e:
+            print(e)
 
 
 def _make_image(cursor: AnimatedCursor) -> Image:
