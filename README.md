@@ -53,3 +53,11 @@ Note that CursorCreate is also capable of doing several actions from the command
 ```bash
 python cursorcreate.py --help
 ```
+
+### Bugs/Issues
+
+This software is currently in beta, and therefore may have some bugs. If you run into any issues, feel free to open an issue on the GitHub [issues](https://github.com/isaacrobinson2000/CursorCreate/issues) page.
+
+### Future Goals
+
+ - Create a setup.py for CursorCreate
