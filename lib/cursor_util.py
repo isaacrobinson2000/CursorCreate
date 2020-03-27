@@ -11,7 +11,7 @@ from PIL import ImageSequence
 # Some versions of pillow don't actually have this error, so just set this exception to the general case in this case.
 try:
     from PIL import UnidentifiedImageError
-except ImportError:
+except ImportError as e:
     UnidentifiedImageError = Exception
 
 

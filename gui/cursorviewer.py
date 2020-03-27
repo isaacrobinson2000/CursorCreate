@@ -1,13 +1,12 @@
 from PySide2 import QtWidgets, QtGui, QtCore
 from lib.cursor import AnimatedCursor
-from gui.cursorhotspotedit import HotspotEditDialog
 from PIL.ImageQt import ImageQt
 
 class CursorDisplayWidget(QtWidgets.QWidget):
 
     DEF_SIZE = 64
 
-    def __init__(self, parent = None, cursor: AnimatedCursor = None, *args, **kwargs):
+    def __init__(self, parent = None, cursor: AnimatedCursor = None, size=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
         self._cur = None
@@ -20,10 +19,9 @@ class CursorDisplayWidget(QtWidgets.QWidget):
         self._imgs = None
         self._delays = None
         self._pressed = False
+        self._size = self.DEF_SIZE if(size is None) else int(size)
 
         self.current_cursor = cursor
-
-        self.setCursor(QtGui.Qt.PointingHandCursor)
 
         self.setMinimumSize(self._imgs[self._current_frame].size())
         self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
@@ -33,17 +31,6 @@ class CursorDisplayWidget(QtWidgets.QWidget):
         self.__painter.begin(self)
         self.__painter.drawPixmap(0, 0, self._imgs[self._current_frame])
         self.__painter.end()
-
-    def mousePressEvent(self, event: QtGui.QMouseEvent):
-        self._pressed = True
-
-    def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
-        if(self._pressed):
-            self._pressed = False
-            if(self.current_cursor is not None):
-                mod_hotspot = HotspotEditDialog(self.window(), self.current_cursor)
-                mod_hotspot.exec()
-                self.current_cursor = self.current_cursor
 
     def sizeHint(self) -> QtCore.QSize:
         return QtCore.QSize(self.DEF_SIZE, self.DEF_SIZE)
@@ -68,14 +55,14 @@ class CursorDisplayWidget(QtWidgets.QWidget):
         self.__animation_timer.stop()
 
         if(cursor is not None and (len(cursor) > 0)):
-            self._cur.normalize([(self.DEF_SIZE, self.DEF_SIZE)])
-            self._imgs = [QtGui.QPixmap(ImageQt(cur[(self.DEF_SIZE, self.DEF_SIZE)].image)) for cur, delay in cursor]
+            self._cur.normalize([(self._size, self._size)])
+            self._imgs = [QtGui.QPixmap(ImageQt(cur[(self._size, self._size)].image)) for cur, delay in cursor]
             self._delays = [delay for cur, delay in cursor]
 
             if(len(cursor) > 1):
                 self._is_ani = True
         else:
-            self._imgs = [QtGui.QPixmap(QtGui.QImage(bytes(4 * self.DEF_SIZE ** 2), self.DEF_SIZE, self.DEF_SIZE, 4,
+            self._imgs = [QtGui.QPixmap(QtGui.QImage(bytes(4 * self._size ** 2), self._size, self._size, 4,
                                                      QtGui.QImage.Format_ARGB32))]
             self._delays = [0]
 

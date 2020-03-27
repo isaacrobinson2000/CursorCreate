@@ -1,6 +1,6 @@
 from PySide2 import QtWidgets, QtGui, QtCore
 from lib.cursor_util import load_cursor
-from gui.cursorviewer import CursorDisplayWidget
+from gui.cursorviewedit import CursorViewEditWidget
 from urllib.request import urlopen
 from urllib.error import URLError
 from io import BytesIO
@@ -19,7 +19,7 @@ class CursorSelectWidget(QtWidgets.QFrame):
         self._main_layout = QtWidgets.QVBoxLayout()
         self._label = QtWidgets.QLabel(label_text)
         self._label.setAlignment(QtCore.Qt.AlignCenter)
-        self._viewer = CursorDisplayWidget(cursor=def_cursor)
+        self._viewer = CursorViewEditWidget(cursor=def_cursor)
         self._file_sel_btn = QtWidgets.QPushButton("Select File")
         self._current_file = None
 

@@ -4,6 +4,7 @@ from PIL import Image, ImageQt
 from PySide2 import QtWidgets, QtGui, QtCore
 from lib.cursor import AnimatedCursor, Cursor, CursorIcon
 from gui.layouts import FlowLayout
+from gui.cursorpreviewdialog import CursorPreviewDialog
 
 
 class CursorHotspotWidget(QtWidgets.QWidget):
@@ -225,10 +226,13 @@ class HotspotEditDialog(QtWidgets.QDialog):
         self._share_delays = QtWidgets.QCheckBox("Share Delays Between Frames")
         self._share_delays.setTristate(False)
 
+        self._preview = QtWidgets.QPushButton("Preview")
+
         self._outer_layout.addWidget(self._info_label)
         self._outer_layout.addWidget(self._scroll_area)
         self._outer_layout.addWidget(self._share_hotspots)
         self._outer_layout.addWidget(self._share_delays)
+        self._outer_layout.addWidget(self._preview)
 
         self.setLayout(self._outer_layout)
         self.resize(self.sizeHint())
@@ -236,6 +240,7 @@ class HotspotEditDialog(QtWidgets.QDialog):
         # Event connections...
         self._share_hotspots.stateChanged.connect(self._share_hotspot_chg)
         self._share_delays.stateChanged.connect(self._share_delays_chg)
+        self._preview.clicked.connect(self._on_preview)
         for cur_picker in self._hotspot_picker_lst:
             cur_picker.userHotspotChange.connect(self._on_hotspot_changed)
             cur_picker.userDelayChange.connect(self._on_delay_changed)
@@ -260,6 +265,10 @@ class HotspotEditDialog(QtWidgets.QDialog):
         if(self._share_delays.isChecked()):
             for cur_picker in self._hotspot_picker_lst:
                 cur_picker.delay = value
+
+    def _on_preview(self):
+        dialog = CursorPreviewDialog(self, self.current_cursor)
+        dialog.exec_()
 
     @property
     def current_cursor(self) -> AnimatedCursor:

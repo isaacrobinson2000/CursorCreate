@@ -10,7 +10,8 @@ import sys
 # Attempt to import the gui, if it fails(gui packages missing) set the module to none to let methods below know...
 try:
     from gui.cursorthememaker import launch_gui
-except ImportError:
+except ImportError as e:
+    print(repr(e))
     launch_gui = None
 
 def print_help():
