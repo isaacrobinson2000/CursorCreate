@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Type, Any, Tuple
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from lib.cursor import AnimatedCursor
 from lib.xcur_format import XCursorFormat
@@ -480,6 +480,101 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
     @classmethod
     def get_name(cls):
         return "mousecape_macos"
+
+
+class PreviewPictureBuilder(CursorThemeBuilder):
+    """
+    Not really a theme builder, but constructs a transparent png image with all of the cursors arranged in a grid.
+    This image is meant to be pasted on top of a background to provide a preview of your cursor theme if you plan
+    on posting it on the internet or giving it to others...
+    """
+
+    SIZE_PER_CURSOR = 64
+
+    CURSOR_ORDER = [
+        'default',
+        'alias',
+        'copy',
+        'context-menu',
+        'help',
+        'no-drop',
+        'center_ptr',
+        'right_ptr',
+        'text',
+        'vertical-text',
+        'progress',
+        'wait',
+        'pointer',
+        'openhand',
+        'dnd-move',
+        'dnd-no-drop',
+        'not-allowed',
+        'pirate',
+        'draft',
+        'pencil',
+        'color-picker',
+        'zoom-in',
+        'zoom-out',
+        'crosshair',
+        'cell',
+        'fleur',
+        'all-scroll',
+        'up-arrow',
+        'right-arrow',
+        'down-arrow',
+        'left-arrow',
+        'top_side',
+        'right_side',
+        'bottom_side',
+        'left_side',
+        'top_left_corner',
+        'top_right_corner',
+        'bottom_right_corner',
+        'bottom_left_corner',
+        'col-resize',
+        'row-resize',
+        'size_ver',
+        'size_bdiag',
+        'size_hor',
+        'size_fdiag',
+        'wayland-cursor',
+        'x-cursor',
+    ]
+
+    @classmethod
+    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+        cur_center = cls.SIZE_PER_CURSOR
+        w_in_curs = int(np.ceil(np.sqrt(len(cursor_dict))))
+        cur_w = cls.SIZE_PER_CURSOR * 2
+
+        new_image = Image.new("RGBA", (w_in_curs * cur_w, w_in_curs * cur_w), (0, 0, 0, 0))
+        drawer = ImageDraw.Draw(new_image)
+
+        cursor_order_dict = {name: i for i, name in enumerate(cls.CURSOR_ORDER)}
+
+        for i, name in enumerate(sorted(cursor_dict, key=cursor_order_dict.get)):
+            lookup_s = (cls.SIZE_PER_CURSOR,) * 2
+            cursor_dict[name].normalize([lookup_s])
+
+            x_center = (((i % w_in_curs) * cur_w) + cur_center)
+            y_center = (((i // w_in_curs) * cur_w) + cur_center)
+            x_img_off = x_center - cursor_dict[name][0][0][lookup_s].hotspot[0]
+            y_img_off = y_center - cursor_dict[name][0][0][lookup_s].hotspot[1]
+
+            for x_mult, y_mult in zip([0, 0, 1, -1], [1, -1, 0, 0]):
+                    x_cross_end = x_center + int(x_mult * cur_center * 0.25)
+                    y_cross_end = y_center + int(y_mult * cur_center * 0.25)
+                    drawer.line((x_center, y_center, x_cross_end, y_cross_end), fill=(50, 50, 50, 150), width=3)
+                    drawer.line((x_center, y_center, x_cross_end, y_cross_end), fill=(205, 205, 205, 150), width=1)
+
+            cur_img = cursor_dict[name][0][0][lookup_s].image
+            new_image.paste(cur_img, (x_img_off, y_img_off), cur_img)
+
+        new_image.save(str(directory / f"{theme_name}_preview.png"), "png")
+
+    @classmethod
+    def get_name(cls):
+        return "preview_picture"
 
 
 def get_theme_builders() -> List[Type[CursorThemeBuilder]]:

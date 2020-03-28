@@ -6,6 +6,7 @@ from lib.cursor import AnimatedCursor
 from PIL import Image
 import shutil
 import json
+import traceback
 
 CURRENT_FORMAT_VERSION = 1
 CURRENT_FORMAT_NAME = "cursor_build_file"
@@ -30,8 +31,8 @@ def build_theme(theme_name: str, directory: Path, metadata: Dict[str, Any], curs
             ext_dir = build_theme_in / theme_builder.get_name()
             ext_dir.mkdir(exist_ok=True)
             theme_builder.build_theme(theme_name, metadata, cursor_dict, ext_dir)
-        except Exception as e:
-            print(e)
+        except Exception:
+            traceback.print_exc()
 
 
 def _make_image(cursor: AnimatedCursor) -> Image:
