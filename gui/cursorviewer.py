@@ -67,3 +67,14 @@ class CursorDisplayWidget(QtWidgets.QWidget):
             self._delays = [0]
 
         self.moveStep()
+
+    def stop_and_destroy(self):
+        """ Forcefully destroys the cursor viewers animation timer by stopping it and deleting it. """
+        if((self.__animation_timer is not None) and (self.__animation_timer.isActive())):
+            self.__animation_timer.stop()
+
+        del self.__animation_timer
+        self.__animation_timer = None
+
+    def __del__(self):
+        self.stop_and_destroy()

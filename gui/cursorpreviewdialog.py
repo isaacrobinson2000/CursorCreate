@@ -21,7 +21,7 @@ class CursorPreviewDialog(QtWidgets.QDialog):
         self._frame.setLayout(self._box)
         self._box.setMargin(0)
 
-        self._sub_layouts = []
+        self._viewers = []
 
         for color in self._colors:
             widget = QtWidgets.QWidget()
@@ -30,6 +30,7 @@ class CursorPreviewDialog(QtWidgets.QDialog):
 
             for size in cursor_util.DEFAULT_SIZES:
                 c_view = CursorDisplayWidget(cursor=cursor, size=size[0])
+                self._viewers.append(c_view)
                 hbox.addWidget(c_view)
 
             widget.setLayout(hbox)
@@ -39,6 +40,16 @@ class CursorPreviewDialog(QtWidgets.QDialog):
 
         self.setLayout(self._main_layout)
         self.setMinimumSize(self.sizeHint())
+
+    def closeEvent(self, evt: QtGui.QCloseEvent):
+        print("Closed!")
+        super().closeEvent(evt)
+
+        self._preview_panel.stop_and_destroy()
+        for cur_view in self._viewers:
+            cur_view.stop_and_destroy()
+
+        self.accept()
 
 
 class PreviewArea(QtWidgets.QWidget):
@@ -103,3 +114,15 @@ class PreviewArea(QtWidgets.QWidget):
         if(self._pressed):
             self.mouseMoveEvent(event)
             self._pressed = False
+
+    def stop_and_destroy(self):
+        """ Forcefully destroys this CursorPreviewAreas animation timer. """
+        if((self._animation_timer is not None) and (self._animation_timer.isActive())):
+            self._animation_timer.stop()
+
+        del self._animation_timer
+        self._animation_timer = None
+        self.setCursor(QtGui.Qt.ArrowCursor)
+
+    def __del__(self):
+        self.stop_and_destroy()

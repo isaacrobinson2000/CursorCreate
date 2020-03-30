@@ -18,3 +18,4 @@ class CursorViewEditWidget(CursorDisplayWidget):
                 mod_hotspot = HotspotEditDialog(self.window(), self.current_cursor)
                 mod_hotspot.exec()
                 self.current_cursor = self.current_cursor
+                del mod_hotspot

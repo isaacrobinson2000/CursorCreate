@@ -270,6 +270,10 @@ class HotspotEditDialog(QtWidgets.QDialog):
         dialog = CursorPreviewDialog(self, self.current_cursor)
         dialog.exec_()
 
+    def closeEvent(self, evt: QtGui.QCloseEvent):
+        super().closeEvent(evt)
+        self.accept()
+
     @property
     def current_cursor(self) -> AnimatedCursor:
         return self._cursor
