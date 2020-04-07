@@ -1,12 +1,15 @@
 import copy
 import plistlib
 from abc import ABC, abstractmethod
-from io import BytesIO
+from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Dict, List, Type, Any, Tuple
+from typing import Dict, List, Type, Any, Tuple, Union, Sized
 
 import numpy as np
 from PIL import Image, ImageDraw
+# For building archives dynamically in-place...
+import tarfile
+import zipfile
 
 from lib.cursor import AnimatedCursor
 from lib.xcur_format import XCursorFormat
@@ -98,6 +101,27 @@ class CursorThemeBuilder(ABC):
         raise NotImplementedError(cls.__ERROR_MSG)
 
 
+class ArchivePath:
+    """
+    For creating archive paths in .zip and .tar file. Provides basic path string manipulations...
+    """
+    def __init__(self, *path_seg):
+        self._paths_segments = path_seg
+
+    def __truediv__(self, other):
+        return self._new_path(*self._paths_segments, other)
+
+    def parent(self):
+        return self._new_path(*self._paths_segments[:-1])
+
+    def __str__(self):
+        return "/".join(self._paths_segments)
+
+    @classmethod
+    def _new_path(cls, *path_seg):
+        return cls(*path_seg)
+
+
 class LinuxThemeBuilder(CursorThemeBuilder):
     """
     The theme builder for the linux platform. Technically works for any platform which uses X-Org or Wayland
@@ -173,37 +197,69 @@ class LinuxThemeBuilder(CursorThemeBuilder):
     LICENCE_FILE_NAME = "LICENSE.txt"
 
     @classmethod
-    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
-        new_theme = directory / theme_name
-        new_theme.mkdir(exist_ok=True)
+    def _tarinfo(cls, name: ArchivePath, tar_type: bytes, data: Union[StringIO, BytesIO] = None, **other_args) -> tarfile.TarInfo:
+        new_tarinfo = tarfile.TarInfo(str(name))
 
-        with (new_theme / cls.THEME_FILE_NAME).open("w") as theme_f:
+        if(tar_type == tarfile.DIRTYPE):
+            new_tarinfo.mode = 0o777
+        else:
+            new_tarinfo.mode = 0o666
+
+        new_tarinfo.type = tar_type
+        if(data is not None):
+            new_tarinfo.size = len(data.getvalue())
+
+        for key, value in other_args.items():
+            setattr(new_tarinfo, key, value)
+
+        return new_tarinfo
+
+
+    @classmethod
+    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+        with tarfile.open(str(directory / (theme_name + ".tar.gz")), "w|gz") as tar:
+            # Write the theme directory...
+            theme_dir = ArchivePath(theme_name)
+            tar.addfile(cls._tarinfo(theme_dir, tarfile.DIRTYPE))
+
+            # Write the theme config file...
+            theme_f = BytesIO()
             author = metadata.get("author", None)
             if(author is not None):
-                theme_f.write(f"# {theme_name} cursor theme created by {author}.\n")
-            theme_f.write(f"[Icon Theme]\nName={theme_name}\n")
+                theme_f.write(f"# {theme_name} cursor theme created by {author}.\n".encode())
+            theme_f.write(f"[Icon Theme]\nName={theme_name}\n".encode())
+            theme_f.seek(0)
 
-        licence_text = metadata["licence"]
-        if(licence_text is not None):
-            with (new_theme / cls.LICENCE_FILE_NAME).open("w") as f:
-                f.write(licence_text)
+            tar.addfile(cls._tarinfo(theme_dir / cls.THEME_FILE_NAME, tarfile.REGTYPE, theme_f), theme_f)
 
-        cursor_path = (new_theme / "cursors")
-        cursor_path.mkdir(exist_ok=True)
+            # If the license actually exists, write it to a file...
+            licence_text = metadata.get("licence", None)
+            if(licence_text is not None):
+                license_file = BytesIO(licence_text.encode())
+                tar.addfile(cls._tarinfo(theme_dir / cls.LICENCE_FILE_NAME, tarfile.REGTYPE, license_file), license_file)
 
-        for name, cursor in cursor_dict.items():
-            with (cursor_path / name).open("wb") as cur_out:
+            cursor_dir = (theme_dir / "cursors")
+            tar.addfile(cls._tarinfo(cursor_dir, tarfile.DIRTYPE))
+
+            # Write all of the cursors...
+            for name, cursor in cursor_dict.items():
+                cur_out = BytesIO()
                 XCursorFormat.write(cursor, cur_out)
+                cur_out.seek(0)
+                tar.addfile(cls._tarinfo(cursor_dir / name, tarfile.REGTYPE, cur_out), cur_out)
 
-        if("default" in cursor_dict):
-            dcur = cursor_dict["default"]
-            dcur[0][0][dcur[0][0].max_size()].image.save(str(cursor_path / cls.PREVIEW_FILE))
+            # If default is in the cursor dictionary, create a preview file for this theme...
+            if("default" in cursor_dict):
+                d_cur = cursor_dict["default"]
+                preview_out = BytesIO()
+                d_cur[0][0][d_cur[0][0].max_size()].image.save(preview_out, "png")
+                preview_out.seek(0)
+                tar.addfile(cls._tarinfo(cursor_dir / cls.PREVIEW_FILE, tarfile.REGTYPE, preview_out), preview_out)
 
-        for link, link_to in cls.SYM_LINKS_TO_CUR.items():
-            if(link_to in cursor_dict):
-                if((cursor_path / link).exists()):
-                    (cursor_path / link).unlink()
-                (cursor_path / link).symlink_to((cursor_path / link_to), False)
+            # Create all required symlinks for linux theme to work fully....
+            for link, link_to in cls.SYM_LINKS_TO_CUR.items():
+                if(link_to in cursor_dict):
+                    tar.addfile(cls._tarinfo(cursor_dir / link, tarfile.SYMTYPE, linkname=link_to))
 
     @classmethod
     def get_name(cls):
@@ -279,53 +335,58 @@ class WindowsThemeBuilder(CursorThemeBuilder):
 
     @classmethod
     def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
-        theme_dir = directory / theme_name
-        theme_dir.mkdir(exist_ok=True)
+        with zipfile.ZipFile(str(directory / (theme_name + ".zip")), 'w') as zip_f:
+            theme_dir = ArchivePath(theme_name)
 
-        win_cursors = {name: cursor for name, cursor in cursor_dict.items() if(name in cls.LINUX_TO_WIN_CURSOR)}
-        reg_used = {cls.LINUX_TO_WIN_CURSOR[name][0] for name in win_cursors}
+            win_cursors = {name: cursor for name, cursor in cursor_dict.items() if(name in cls.LINUX_TO_WIN_CURSOR)}
+            reg_used = {cls.LINUX_TO_WIN_CURSOR[name][0] for name in win_cursors}
 
-        reg_list = []
-        for name in cls.REGISTRY_ORDER:
-            reg_list.append(f"%10%\%CUR_DIR%\%{name}%" if(name in reg_used) else "")
-        reg_list = ",".join(reg_list)
+            reg_list = []
+            for name in cls.REGISTRY_ORDER:
+                reg_list.append(f"%10%\%CUR_DIR%\%{name}%" if(name in reg_used) else "")
+            reg_list = ",".join(reg_list)
 
-        cursor_names = {}
-        for name, cursor in win_cursors.items():
-            reg_name, file_name = cls.LINUX_TO_WIN_CURSOR[name]
+            cursor_names = {}
+            for name, cursor in win_cursors.items():
+                reg_name, file_name = cls.LINUX_TO_WIN_CURSOR[name]
 
-            if(len(cursor) == 0):
-                continue
-            elif(len(cursor) == 1):
-                file_name += ".cur"
-                with (theme_dir / file_name).open("wb") as f:
-                    CurFormat.write(cursor[0][0], f)
+                if(len(cursor) == 0):
+                    continue
+                elif(len(cursor) == 1):
+                    file_name += ".cur"
+                    out_f = BytesIO()
+                    CurFormat.write(cursor[0][0], out_f)
+                    zip_f.writestr(str(theme_dir / file_name), out_f.getvalue())
+                else:
+                    file_name += ".ani"
+                    out_f = BytesIO()
+                    AniFormat.write(cursor, out_f)
+                    zip_f.writestr(str(theme_dir / file_name), out_f.getvalue())
+
+                cursor_names[reg_name] = file_name
+
+            cursor_list = "\n".join([f'"{file_name}"' for file_name in cursor_names.values()])
+            cursor_reg_list = "\n".join([f'{name} = "{file_name}"' for name, file_name in cursor_names.items()])
+
+            licence_text = metadata.get("licence")
+            if(licence_text is not None):
+                zip_f.writestr(str(theme_dir / cls.LICENCE_FILE_NAME), licence_text)
+                licence_info = f"[Scheme.Txt]\n{cls.LICENCE_FILE_NAME}"
             else:
-                file_name += ".ani"
-                with (theme_dir / file_name).open("wb") as f:
-                    AniFormat.write(cursor, f)
+                licence_info = ""
 
-            cursor_names[reg_name] = file_name
+            author = metadata.get("author", None)
+            author = "" if(author is None) else f" by {author}"
 
-        cursor_list = "\n".join([f'"{file_name}"' for file_name in cursor_names.values()])
-        cursor_reg_list = "\n".join([f'{name} = "{file_name}"' for name, file_name in cursor_names.items()])
+            inf_file = WINDOWS_INF_FILE.format(name=theme_name, author=author, reg_list=reg_list, cursor_list=cursor_list,
+                                               licence_txt=licence_info, cursor_reg_list=cursor_reg_list)
 
-        licence_text = metadata.get("licence")
-        if(licence_text is not None):
-            with (theme_dir / cls.LICENCE_FILE_NAME).open("w") as f:
-                f.write(licence_text)
-            licence_info = f"[Scheme.Txt]\n{cls.LICENCE_FILE_NAME}"
-        else:
-            licence_info = ""
+            zip_f.writestr(str(theme_dir / "install.inf"), inf_file)
 
-        author = metadata.get("author", None)
-        author = "" if(author is None) else f" by {author}"
-
-        inf_file = WINDOWS_INF_FILE.format(name=theme_name, author=author, reg_list=reg_list, cursor_list=cursor_list,
-                                           licence_txt=licence_info, cursor_reg_list=cursor_reg_list)
-
-        with (theme_dir / "install.inf").open("w") as f:
-            f.write(inf_file)
+            # Set windows as the os it was created on such that permissions are not copied...
+            for z_info in zip_f.filelist:
+                z_info:  zipfile.ZipInfo = z_info
+                z_info.create_system = 0
 
     @classmethod
     def get_name(cls):
