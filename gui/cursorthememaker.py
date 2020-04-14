@@ -271,6 +271,7 @@ class DirectoryPicker(QtWidgets.QDialog):
         self._theme_text.textChanged.connect(lambda a: self.validate())
 
         self.accepted.connect(self.on_submit_stuff)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
     def openDir(self):
         sel_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a Directory")
@@ -330,6 +331,7 @@ class MetaDataEdit(QtWidgets.QDialog):
         self._licence_btn.clicked.connect(self._on_file_req)
         self._submit_btns.accepted.connect(self._on_accept)
         self._submit_btns.rejected.connect(self.reject)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
     def _on_file_req(self):
         path, __ = QtWidgets.QFileDialog.getOpenFileName(self, "Select a Licence File", filter=self.FILE_PICKER_FILTER)
