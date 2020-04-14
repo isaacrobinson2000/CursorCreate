@@ -45,7 +45,6 @@ class CursorPreviewDialog(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
     def closeEvent(self, evt: QtGui.QCloseEvent):
-        print("Closed!")
         super().closeEvent(evt)
         self.accept()
 

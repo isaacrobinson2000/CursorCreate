@@ -280,7 +280,3 @@ class HotspotEditDialog(QtWidgets.QDialog):
     def current_cursor(self) -> AnimatedCursor:
         return self._cursor
 
-
-    def __del__(self):
-        print("Deleting Hotspot Dialog...")
-
