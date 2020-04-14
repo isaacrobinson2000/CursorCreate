@@ -244,6 +244,8 @@ class HotspotEditDialog(QtWidgets.QDialog):
         for cur_picker in self._hotspot_picker_lst:
             cur_picker.userHotspotChange.connect(self._on_hotspot_changed)
             cur_picker.userDelayChange.connect(self._on_delay_changed)
+        # Set to delete this dialog on close...
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
 
     def _share_hotspot_chg(self, state: int):
@@ -277,4 +279,8 @@ class HotspotEditDialog(QtWidgets.QDialog):
     @property
     def current_cursor(self) -> AnimatedCursor:
         return self._cursor
+
+
+    def __del__(self):
+        print("Deleting Hotspot Dialog...")
 

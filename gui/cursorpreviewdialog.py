@@ -41,14 +41,12 @@ class CursorPreviewDialog(QtWidgets.QDialog):
         self.setLayout(self._main_layout)
         self.setMinimumSize(self.sizeHint())
 
+        # Set to delete this dialog on close...
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+
     def closeEvent(self, evt: QtGui.QCloseEvent):
         print("Closed!")
         super().closeEvent(evt)
-
-        self._preview_panel.stop_and_destroy()
-        for cur_view in self._viewers:
-            cur_view.stop_and_destroy()
-
         self.accept()
 
 
@@ -115,14 +113,5 @@ class PreviewArea(QtWidgets.QWidget):
             self.mouseMoveEvent(event)
             self._pressed = False
 
-    def stop_and_destroy(self):
-        """ Forcefully destroys this CursorPreviewAreas animation timer. """
-        if((self._animation_timer is not None) and (self._animation_timer.isActive())):
-            self._animation_timer.stop()
-
-        del self._animation_timer
-        self._animation_timer = None
-        self.setCursor(QtGui.Qt.ArrowCursor)
-
     def __del__(self):
-        self.stop_and_destroy()
+        del self._animation_timer
