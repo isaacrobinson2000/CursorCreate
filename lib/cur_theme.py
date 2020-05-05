@@ -195,6 +195,8 @@ class LinuxThemeBuilder(CursorThemeBuilder):
     THEME_FILE_NAME = "index.theme"
     # Name of file storing licence...
     LICENCE_FILE_NAME = "LICENSE.txt"
+    # Legal export sizes...
+    LEGAL_EXPORT_SIZES = {(32, 32), (48, 48), (64, 64), (128, 128)}
 
     @classmethod
     def _tarinfo(cls, name: ArchivePath, tar_type: bytes, data: Union[StringIO, BytesIO] = None, **other_args) -> tarfile.TarInfo:
@@ -243,6 +245,12 @@ class LinuxThemeBuilder(CursorThemeBuilder):
 
             # Write all of the cursors...
             for name, cursor in cursor_dict.items():
+                cursor.normalize(cls.LEGAL_EXPORT_SIZES)
+                for frame, delay in cursor:
+                    for size in frame:
+                        if(size not in cls.LEGAL_EXPORT_SIZES):
+                            del frame[size]
+
                 cur_out = BytesIO()
                 XCursorFormat.write(cursor, cur_out)
                 cur_out.seek(0)
