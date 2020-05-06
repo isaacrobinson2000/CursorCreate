@@ -626,12 +626,13 @@ class PreviewPictureBuilder(CursorThemeBuilder):
 
         for i, name in enumerate(sorted(cursor_dict, key=cursor_order_dict.get)):
             lookup_s = (cls.SIZE_PER_CURSOR,) * 2
-            cursor_dict[name].normalize([lookup_s])
+            cur = cursor_dict[name].copy()
+            cur.restrict_to_sizes([lookup_s])
 
             x_center = (((i % w_in_curs) * cur_w) + cur_center)
             y_center = (((i // w_in_curs) * cur_w) + cur_center)
-            x_img_off = x_center - cursor_dict[name][0][0][lookup_s].hotspot[0]
-            y_img_off = y_center - cursor_dict[name][0][0][lookup_s].hotspot[1]
+            x_img_off = x_center - cur[0][0][lookup_s].hotspot[0]
+            y_img_off = y_center - cur[0][0][lookup_s].hotspot[1]
 
             for x_mult, y_mult in zip([0, 0, 1, -1], [1, -1, 0, 0]):
                     x_cross_end = x_center + int(x_mult * cur_center * 0.25)
@@ -639,7 +640,7 @@ class PreviewPictureBuilder(CursorThemeBuilder):
                     drawer.line((x_center, y_center, x_cross_end, y_cross_end), fill=(50, 50, 50, 150), width=3)
                     drawer.line((x_center, y_center, x_cross_end, y_cross_end), fill=(205, 205, 205, 150), width=1)
 
-            cur_img = cursor_dict[name][0][0][lookup_s].image
+            cur_img = cur[0][0][lookup_s].image
             new_image.paste(cur_img, (x_img_off, y_img_off), cur_img)
 
         new_image.save(str(directory / f"{theme_name}_preview.png"), "png")
