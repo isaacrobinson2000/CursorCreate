@@ -171,6 +171,19 @@ class Cursor:
                 new_hy = h_offset + (self[max_size].hotspot[1] / max_size[1]) * final_img_h
                 self.add(CursorIcon(new_cur, int(new_hx), int(new_hy)))
 
+    def restrict_to_sizes(self, sizes: Iterable[Tuple[int, int]]):
+        """
+        Restricts the sizes stored in this cursor to only the sizes passed to this method, deleting the rest.
+
+        :param sizes: An iterable of Tuples of two integers, used as the only sizes to keep.
+        """
+        sizes = set(sizes)
+        self.add_sizes(sizes)
+
+        for size in self:
+            if(size not in sizes):
+                del self[size]
+
     def remove_non_square_sizes(self):
         """
         Remove all non-square sized cursors from this cursor object.
@@ -178,6 +191,14 @@ class Cursor:
         for size in list(self):
             if(size[0] != size[1]):
                 del self[size]
+
+    def copy(self) -> "Cursor":
+        """
+        Creates a shallow copy of this cursor.
+
+        :return: A shallow copy of this cursor, only copies the lookup table.
+        """
+        return Cursor(self._curs.values())
 
 
 class AnimatedCursor(list):
@@ -226,4 +247,23 @@ class AnimatedCursor(list):
         """
         for cursor, delay in self:
             cursor.remove_non_square_sizes()
+
+    def restrict_to_sizes(self, sizes: Iterable[Tuple[int, int]]):
+        """
+        Forces all cursors in this animated cursor to only contain the sizes passed to this method
+
+        :param sizes: An iterable of tuples of two integers, representing the sizes to keep.
+        """
+        for cursor, delay in self:
+            cursor.restrict_to_sizes(sizes)
+
+
+    def copy(self) -> "AnimatedCursor":
+        """
+        Creates a shallow copy of this AnimatedCursor which contains shallow copies of the Cursor objects contained
+        inside of it.
+
+        :return: An AnimatedCursor
+        """
+        return AnimatedCursor([cur.copy() for cur, delay in self], [delay for cur, delay in self])
 

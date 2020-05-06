@@ -131,8 +131,6 @@ class CurFormat(CursorStorageFormat):
         :param cursor: The cursor object to save.
         :param out: The file handle to output the cursor to.
         """
-        cursor.add_sizes([(32, 32)])
-
         out.write(cls.MAGIC)
         out.write(to_bytes(len(cursor), 2))
 

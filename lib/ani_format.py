@@ -193,8 +193,6 @@ class AniFormat(AnimatedCursorStorageFormat):
         return ani_cur
 
 
-    DEF_CURSOR_SIZES = {(32, 32), (48, 48), (64, 64)}
-
     @classmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
         """
@@ -203,16 +201,6 @@ class AniFormat(AnimatedCursorStorageFormat):
         :param cursor: The AnimatedCursor object to write.
         :param out: The file buffer to write the new .ani data to.
         """
-        # Normalize the cursor sizes...
-        cursor = copy.deepcopy(cursor)
-        cursor.normalize(list(cls.DEF_CURSOR_SIZES))
-        cursor.remove_non_square_sizes()
-
-        for cur, delay in cursor:
-            for size in list(cur):
-                if(size not in cls.DEF_CURSOR_SIZES):
-                    del cur[size]
-
         # Write the magic...
         out.write(cls.RIFF_MAGIC)
         # We will deal with writing the length of the entire file later...

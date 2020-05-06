@@ -245,11 +245,8 @@ class LinuxThemeBuilder(CursorThemeBuilder):
 
             # Write all of the cursors...
             for name, cursor in cursor_dict.items():
-                cursor.normalize(cls.LEGAL_EXPORT_SIZES)
-                for frame, delay in cursor:
-                    for size in frame:
-                        if(size not in cls.LEGAL_EXPORT_SIZES):
-                            del frame[size]
+                cursor = cursor.copy()
+                cursor.restrict_to_sizes(cls.LEGAL_EXPORT_SIZES)
 
                 cur_out = BytesIO()
                 XCursorFormat.write(cursor, cur_out)
@@ -338,6 +335,9 @@ class WindowsThemeBuilder(CursorThemeBuilder):
         "vert", "horz", "dgn1", "dgn2", "move", "alternate", "link"
     ]
 
+    # Legal export sizes...
+    LEGAL_EXPORT_SIZES = {(32, 32), (48, 48), (64, 64)}
+
     # Name of file storing licence...
     LICENCE_FILE_NAME = "LICENSE.txt"
 
@@ -356,6 +356,8 @@ class WindowsThemeBuilder(CursorThemeBuilder):
 
             cursor_names = {}
             for name, cursor in win_cursors.items():
+                cursor = cursor.copy()
+                cursor.restrict_to_sizes(cls.LEGAL_EXPORT_SIZES)
                 reg_name, file_name = cls.LINUX_TO_WIN_CURSOR[name]
 
                 if(len(cursor) == 0):
@@ -463,7 +465,8 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
                     - Vec2D: Size of image
                     - List[PIL.Image]: Image representations, at 1x, 2x, and 5x...
         """
-        cur = copy.deepcopy(cur)
+        cur = cur.copy()
+
         delays = np.array([delay for sub_cur, delay in cur])
         cumulative_delay = np.cumsum(delays)
         half_avg = int(np.mean(delays) / 4)
@@ -472,7 +475,7 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
         unified_delay = max(gcd_of_em, half_avg)
         num_frames = cumulative_delay[-1] // unified_delay
 
-        cur.normalize(cls.CURSOR_EXPORT_SIZES)
+        cur.restrict_to_sizes(cls.CURSOR_EXPORT_SIZES)
         new_images = [Image.new("RGBA", (size[0] * 2, (size[1] * 2) * num_frames), (0,0,0,0)) for size in
                       cls.CURSOR_EXPORT_SIZES]
 
