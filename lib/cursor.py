@@ -180,7 +180,7 @@ class Cursor:
         sizes = set(sizes)
         self.add_sizes(sizes)
 
-        for size in self:
+        for size in list(self):
             if(size not in sizes):
                 del self[size]
 
