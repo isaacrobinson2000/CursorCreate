@@ -126,6 +126,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         :param cursor: The AnimatedCursor object to write.
         :param out: The file buffer to write the new X-Org Cursor data to.
         """
+        cursor = cursor.copy()
         cursor.normalize()
 
         if(len(cursor) == 0):
