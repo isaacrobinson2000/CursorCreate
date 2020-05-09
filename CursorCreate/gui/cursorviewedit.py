@@ -1,5 +1,5 @@
-from gui.cursorviewer import CursorDisplayWidget
-from gui.cursorhotspotedit import HotspotEditDialog
+from CursorCreate.gui.cursorviewer import CursorDisplayWidget
+from CursorCreate.gui.cursorhotspotedit import HotspotEditDialog
 from PySide2 import QtGui
 
 class CursorViewEditWidget(CursorDisplayWidget):

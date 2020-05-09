@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Dict, Tuple, Union, Any
-from lib import cursor_util
-from lib.cur_theme import get_theme_builders
-from lib.cursor import AnimatedCursor
+from CursorCreate.lib import cursor_util
+from CursorCreate.lib.cur_theme import get_theme_builders
+from CursorCreate.lib.cursor import AnimatedCursor
 from PIL import Image
 import shutil
 import json
@@ -165,7 +165,6 @@ def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Di
             return None
 
         for cursor_info in json_build_data["data"]:
-            cursor = None
             cursor_path = theme_build_dir / cursor_info["cursor_file"]
 
             with cursor_path.open("rb") as cur_file:

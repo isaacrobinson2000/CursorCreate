@@ -2,10 +2,10 @@ from io import BytesIO
 from pathlib import Path
 from typing import Union, Dict, Any
 from PySide2 import QtWidgets, QtCore, QtGui
-from lib import theme_util
-from gui.cursorselector import CursorSelectWidget
-from gui.layouts import FlowLayout
-from lib.cur_theme import CursorThemeBuilder
+from CursorCreate.lib import theme_util
+from CursorCreate.gui.cursorselector import CursorSelectWidget
+from CursorCreate.gui.layouts import FlowLayout
+from CursorCreate.lib.cur_theme import CursorThemeBuilder
 from PIL.ImageQt import ImageQt
 from PIL import Image
 import copy

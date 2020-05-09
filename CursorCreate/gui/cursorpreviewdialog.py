@@ -1,8 +1,9 @@
-from gui.cursorviewer import CursorDisplayWidget
-from lib.cursor import AnimatedCursor
+from CursorCreate.gui.cursorviewer import CursorDisplayWidget
+from CursorCreate.lib.cursor import AnimatedCursor
 from PySide2 import QtWidgets, QtCore, QtGui
 from PIL import ImageQt
-from lib import cursor_util
+from CursorCreate.lib import cursor_util
+
 
 class CursorPreviewDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, cursor: AnimatedCursor=None):

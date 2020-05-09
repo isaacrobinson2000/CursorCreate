@@ -4,14 +4,14 @@ available...
 """
 
 from pathlib import Path
-from lib import theme_util
+from CursorCreate.lib import theme_util
 import sys
 
 # Attempt to import the gui, if it fails(gui packages missing) set the module to none to let methods below know...
 try:
-    from gui.cursorthememaker import launch_gui
-except ImportError as e:
-    print(repr(e))
+    from CursorCreate.gui.cursorthememaker import launch_gui
+except ImportError as exp:
+    print(repr(exp))
     launch_gui = None
 
 def print_help():
@@ -27,12 +27,12 @@ def print_help():
     print("'--open FILE': Open the specified cursor project in the GUI by providing the json file...")
     # TODO: print("'--convert INPUT_FILE OUTPUT_FILE FORMAT': Convert")
 
-def main(args):
+def main():
     """
     Main method of the cursor maker program. Parses the first flag and figures out what to do based on it...
-
-    :param args: List of user passed arguments.
     """
+    args = sys.argv[1:]
+
     if(len(args) == 0):
         # No arguments, launch the gui if possible
         if(launch_gui is not None):
@@ -73,4 +73,4 @@ def main(args):
 
 
 if(__name__ == "__main__"):
-    main(sys.argv[1:])
+    main()

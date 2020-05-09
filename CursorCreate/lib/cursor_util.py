@@ -1,10 +1,10 @@
 from io import BytesIO
 from typing import BinaryIO
 
-from lib.cursor import AnimatedCursor, Cursor, CursorIcon
+from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 import cairosvg
 from PIL import Image, ImageOps
-from lib import format_core
+from CursorCreate.lib import format_core
 from xml.etree import ElementTree
 from PIL import ImageSequence
 
@@ -86,7 +86,7 @@ def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
         raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
 
     # Build empty animated cursor to start stashing frames in...
-    ani_cur = AnimatedCursor([Cursor() for i in range(num_frames)], [100] * num_frames)
+    ani_cur = AnimatedCursor([Cursor() for __ in range(num_frames)], [100] * num_frames)
 
     for sizes in DEFAULT_SIZES:
         # For each default size, resize svg to it and add all frames to the AnimatedCursor object...

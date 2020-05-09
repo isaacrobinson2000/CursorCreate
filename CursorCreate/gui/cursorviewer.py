@@ -1,5 +1,5 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-from lib.cursor import AnimatedCursor
+from CursorCreate.lib.cursor import AnimatedCursor
 from PIL.ImageQt import ImageQt
 
 class CursorDisplayWidget(QtWidgets.QWidget):

@@ -2,9 +2,9 @@ from typing import Tuple
 import numpy as np
 from PIL import Image, ImageQt
 from PySide2 import QtWidgets, QtGui, QtCore
-from lib.cursor import AnimatedCursor, Cursor, CursorIcon
-from gui.layouts import FlowLayout
-from gui.cursorpreviewdialog import CursorPreviewDialog
+from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
+from CursorCreate.gui.layouts import FlowLayout
+from CursorCreate.gui.cursorpreviewdialog import CursorPreviewDialog
 
 
 class CursorHotspotWidget(QtWidgets.QWidget):

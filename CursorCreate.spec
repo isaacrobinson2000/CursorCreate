@@ -82,7 +82,7 @@ if(sys.platform.startswith("darwin")):
     binaries.extend([(f_lib(name), ".") for name in libs])
 
 a = Analysis(
-    ['cursorcreate.py'],
+    ['CursorCreate/cursorcreate.py'],
     pathex = [str(spec_root)],
     binaries = binaries,
     datas = datas,

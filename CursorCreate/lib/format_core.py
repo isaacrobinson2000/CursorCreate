@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import BinaryIO
-from lib.cursor import AnimatedCursor, Cursor
+from CursorCreate.lib.cursor import AnimatedCursor, Cursor
 
 
 def to_bytes(num: int, length: int, byteorder: str="little") -> bytes:

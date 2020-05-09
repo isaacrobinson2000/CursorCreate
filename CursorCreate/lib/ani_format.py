@@ -1,10 +1,9 @@
 from io import BytesIO
 from typing import BinaryIO, Iterator, Tuple, Set, Dict, Any
-from lib.format_core import AnimatedCursorStorageFormat, to_int, to_bytes
+from CursorCreate.lib.format_core import AnimatedCursorStorageFormat, to_int, to_bytes
 from PIL import BmpImagePlugin
-from lib.cur_format import CurFormat
-from lib.cursor import CursorIcon, Cursor, AnimatedCursor
-import copy
+from CursorCreate.lib.cur_format import CurFormat
+from CursorCreate.lib.cursor import CursorIcon, Cursor, AnimatedCursor
 
 
 # UTILITY METHODS:

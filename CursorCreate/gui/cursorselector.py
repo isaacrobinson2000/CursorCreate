@@ -1,6 +1,6 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-from lib.cursor_util import load_cursor
-from gui.cursorviewedit import CursorViewEditWidget
+from CursorCreate.lib.cursor_util import load_cursor
+from CursorCreate.gui.cursorviewedit import CursorViewEditWidget
 from urllib.request import urlopen
 from urllib.error import URLError
 from io import BytesIO

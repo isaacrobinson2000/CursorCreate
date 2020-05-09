@@ -2,8 +2,8 @@ from typing import BinaryIO
 from io import BytesIO
 from PIL.IcoImagePlugin import IcoFile
 from PIL import Image
-from lib.cursor import Cursor, CursorIcon
-from lib.format_core import CursorStorageFormat, to_bytes, to_signed_bytes
+from CursorCreate.lib.cursor import Cursor, CursorIcon
+from CursorCreate.lib.format_core import CursorStorageFormat, to_bytes, to_signed_bytes
 import numpy as np
 
 # The default dpi for BMP images written by this encoder...
