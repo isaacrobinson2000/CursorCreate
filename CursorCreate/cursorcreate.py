@@ -3,6 +3,8 @@ The main entry package for running CursorMaker, provides the CLI interface and h
 available...
 """
 
+# TODO: Add progress bars to things...
+
 from pathlib import Path
 from CursorCreate.lib import theme_util
 import sys
