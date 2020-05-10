@@ -12,6 +12,7 @@ setup(
     url='https://github.com/isaacrobinson2000/CursorCreate',
     license='GPLv3',
     author='Isaac Robinson',
+    download_url="https://github.com/isaacrobinson2000/CursorCreate/archive/v1.2.2.tar.gz",
     author_email='awesomeisaac2000@gmail.com',
     description='A Multi-platform Cursor Theme Building Program',
     long_description = text,
