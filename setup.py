@@ -7,12 +7,12 @@ with readme_file.open("r") as f:
 
 setup(
     name='CursorCreate',
-    version='1.2.2',
+    version='1.3.0',
     packages=['CursorCreate', 'CursorCreate.gui', 'CursorCreate.lib'],
     url='https://github.com/isaacrobinson2000/CursorCreate',
     license='GPLv3',
     author='Isaac Robinson',
-    download_url="https://github.com/isaacrobinson2000/CursorCreate/archive/v1.2.2.tar.gz",
+    download_url="https://github.com/isaacrobinson2000/CursorCreate/archive/v1.3.0.tar.gz",
     author_email='awesomeisaac2000@gmail.com',
     description='A Multi-platform Cursor Theme Building Program',
     long_description = text,
