@@ -12,6 +12,23 @@ If you would like to avoid going through the process of installing from source, 
 Releases Page:
 [https://github.com/isaacrobinson2000/CursorCreate/releases](https://github.com/isaacrobinson2000/CursorCreate/releases)
 
+#### From PyPI:
+
+CursorCreate is also avaibable on PyPI. To install it, exectute one of the commands below:
+```bash
+# For only command line support:
+pip install CursorCreate
+# For additional GUI support:
+pip install CursorCreate[gui]
+```
+Once it is installed, it can be executed using the `CursorCreate` command in the shell:
+```bash
+# Launch the GUI:
+CursorCreate
+# List all command line options:
+CursorCreate --help
+```
+
 #### From Source:
 
 To install CursorCreate from source, you will need the following dependencies:
@@ -36,9 +53,14 @@ This program also comes with a template theme, but due to separate licensing the
 
 ### How to Use
 
-To launch the GUI, simply execute the CursorCreate entry python file, as below:
+To launch the GUI, simply execute the CursorCreate entry file, as below:
 ```bash
-python cursorcreate.py
+# If you installed via prepackaged binary (Have to be in the same directory as the executable):
+./CursorCreate
+# If you installed via PyPI (pip install):
+CursorCreate
+# If you are running it from source:
+python CursorCreate/cursorcreate.py
 ```
 In the GUI, images can simply be dragged and dropped onto the cursor selection widgets in order to load them in. The hotspots and delays of animation frames can be modified by simply clicking on the cursor, as shown below:
 
@@ -51,7 +73,12 @@ For static images and SVGs, the animation frames are expected to be stored horiz
 
 Note that CursorCreate is also capable of doing several actions from the command line, including building cursor themes. To see all the supported command line operations, execute the command below:
 ```bash
-python cursorcreate.py --help
+# If you installed via prepackaged binary (Have to be in the same directory as the executable):
+./CursorCreate --help
+# If you installed via PyPI (pip install):
+CursorCreate --help
+# If you are running it from source:
+python CursorCreate/cursorcreate.py --help
 ```
 
 ### Bugs/Issues
@@ -60,4 +87,5 @@ This software is currently in beta, and therefore may have some bugs. If you run
 
 ### Future Goals
 
- - Create a setup.py for CursorCreate
+ - [x] Create a setup.py for CursorCreate
+ - [ ] Add progress indicators when building cursors or performing any other action.
