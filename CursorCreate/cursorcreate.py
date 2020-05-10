@@ -6,8 +6,15 @@ available...
 # TODO: Add progress bars to things...
 
 from pathlib import Path
-from CursorCreate.lib import theme_util
 import sys
+
+# We try to import lib for CursorCreate, if it fails we attempt to add our parent's parent to the path and try again.
+# This allows for execution via the command line.
+try:
+    from CursorCreate.lib import theme_util
+except ImportError as exp:
+    sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from CursorCreate.lib import theme_util
 
 # Attempt to import the gui, if it fails(gui packages missing) set the module to none to let methods below know...
 try:
