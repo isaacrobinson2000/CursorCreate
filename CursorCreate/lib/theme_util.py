@@ -143,7 +143,7 @@ def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Di
                 - dictionary of name(string) -> (source file path, cursor). This specifies all data needed to build the
                   cursor project.
     """
-    theme_build_dir = theme_build_file.parent
+    theme_build_dir = theme_build_file.resolve().parent
 
     with theme_build_file.open("r") as f:
         json_build_data = json.load(f)

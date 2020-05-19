@@ -68,7 +68,7 @@ def main():
     elif(args[0] == "--build"):
         for config_file in args[1:]:
             try:
-                config_path = Path(config_file)
+                config_path = Path(config_file).resolve()
                 metadata, fc_data = theme_util.load_project(config_path)
                 fc_data = {name: cursor for name, (cur_path, cursor) in fc_data.items()}
                 theme_util.build_theme(config_path.parent.name, config_path.parent.parent, metadata, fc_data)

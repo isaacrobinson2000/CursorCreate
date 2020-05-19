@@ -290,7 +290,7 @@ class DirectoryPicker(QtWidgets.QDialog):
             self._submit_btns.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
 
     def on_submit_stuff(self):
-        self._result = self._theme_text.text().strip(), Path(self._text.text().strip())
+        self._result = self._theme_text.text().strip(), Path(self._text.text().strip()).resolve()
 
     def get_results(self):
         return self._result
