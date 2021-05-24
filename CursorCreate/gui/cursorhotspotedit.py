@@ -1,25 +1,26 @@
 from typing import Tuple
+
 import numpy as np
 from PIL import Image, ImageQt
-from PySide2 import QtWidgets, QtGui, QtCore
-from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
-from CursorCreate.gui.layouts import FlowLayout
+from PySide2 import QtCore, QtGui, QtWidgets
+
 from CursorCreate.gui.cursorpreviewdialog import CursorPreviewDialog
+from CursorCreate.gui.layouts import FlowLayout
+from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 
 
 class CursorHotspotWidget(QtWidgets.QWidget):
-
     VIEW_SIZE = (64, 64)
 
     userHotspotChange = QtCore.Signal((int, int))
 
-    def __init__(self, parent=None, cursor: AnimatedCursor=None, frame=0, *args, **kwargs):
+    def __init__(self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self._frame = 0
         self._frame_img = None
         self._pressed = False
 
-        if((cursor is None) or (len(cursor) == 0)):
+        if (cursor is None) or (len(cursor) == 0):
             self._cursor = AnimatedCursor(
                 [Cursor([CursorIcon(Image.fromarray(np.zeros(self.VIEW_SIZE + (4,), dtype=np.uint8)), 0, 0)])],
                 [100]
@@ -56,7 +57,6 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
         self.__painter.end()
 
-
     def sizeHint(self) -> QtCore.QSize:
         return QtCore.QSize(*self.VIEW_SIZE)
 
@@ -64,13 +64,13 @@ class CursorHotspotWidget(QtWidgets.QWidget):
         self._pressed = True
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
-        if(self._pressed):
+        if self._pressed:
             x, y = event.x(), event.y()
             self.hotspot = x, y
             self.userHotspotChange.emit(x, y)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
-        if(self._pressed):
+        if self._pressed:
             self.mouseMoveEvent(event)
             self._pressed = False
 
@@ -80,7 +80,7 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
     @frame.setter
     def frame(self, value: int):
-        if(0 <= value < len(self._cursor)):
+        if 0 <= value < len(self._cursor):
             self._frame = value
             self._frame_img = QtGui.QPixmap(ImageQt.ImageQt(self._cursor[self._frame][0][self.VIEW_SIZE].image))
             self.update()
@@ -93,7 +93,7 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
     @hotspot.setter
     def hotspot(self, value: Tuple[int, int]):
-        if(not (isinstance(value, Tuple) and len(value) == 2)):
+        if not (isinstance(value, Tuple) and len(value) == 2):
             raise ValueError("Not a coordinate pair!")
 
         value = min(max(0, value[0]), self.VIEW_SIZE[0] - 1), min(max(0, value[1]), self.VIEW_SIZE[1] - 1)
@@ -112,11 +112,10 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
 
 class CursorEditWidget(QtWidgets.QFrame):
-
     userDelayChange = QtCore.Signal((int,))
     userHotspotChange = QtCore.Signal((int, int))
 
-    def __init__(self, parent=None, cursor: AnimatedCursor=None, frame=0, *args, **kwargs):
+    def __init__(self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
         self._main_layout = QtWidgets.QVBoxLayout(self)
@@ -181,7 +180,7 @@ class CursorEditWidget(QtWidgets.QFrame):
 
     @delay.setter
     def delay(self, value: int):
-        if(not (0 <= value < 0xFFFF and isinstance(value, int))):
+        if not (0 <= value < 0xFFFF and isinstance(value, int)):
             return
 
         self._delay_adjuster.setValue(value)
@@ -189,10 +188,9 @@ class CursorEditWidget(QtWidgets.QFrame):
 
 
 class HotspotEditDialog(QtWidgets.QDialog):
-
     CURS_PER_LINE = 5
 
-    def __init__(self, parent=None, cursor: AnimatedCursor=None):
+    def __init__(self, parent=None, cursor: AnimatedCursor = None):
         super().__init__(parent)
         super().setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint)
 
@@ -203,11 +201,10 @@ class HotspotEditDialog(QtWidgets.QDialog):
         self._scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self._scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
-
         self._info_text = "Modify cursor hotspots below: "
         self._info_label = QtWidgets.QLabel(self._info_text)
 
-        if((cursor is None) or (len(cursor) == 0)):
+        if (cursor is None) or (len(cursor) == 0):
             self._hotspot_picker_lst = [CursorEditWidget()]
             self._cursor = self._hotspot_picker_lst[0].current_cursor
         else:
@@ -247,24 +244,23 @@ class HotspotEditDialog(QtWidgets.QDialog):
         # Set to delete this dialog on close...
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
-
     def _share_hotspot_chg(self, state: int):
-        if(state == QtCore.Qt.Checked):
+        if state == QtCore.Qt.Checked:
             # Trigger an update...
             self._on_hotspot_changed(*self._hotspot_picker_lst[0].hotspot)
 
     def _share_delays_chg(self, state: int):
-        if(state == QtCore.Qt.Checked):
+        if state == QtCore.Qt.Checked:
             # Trigger update to all delays...
             self._on_delay_changed(self._hotspot_picker_lst[0].delay)
 
     def _on_hotspot_changed(self, x: int, y: int):
-        if(self._share_hotspots.isChecked()):
+        if self._share_hotspots.isChecked():
             for cur_picker in self._hotspot_picker_lst:
                 cur_picker.hotspot = x, y
 
     def _on_delay_changed(self, value: int):
-        if(self._share_delays.isChecked()):
+        if self._share_delays.isChecked():
             for cur_picker in self._hotspot_picker_lst:
                 cur_picker.delay = value
 
@@ -279,4 +275,3 @@ class HotspotEditDialog(QtWidgets.QDialog):
     @property
     def current_cursor(self) -> AnimatedCursor:
         return self._cursor
-

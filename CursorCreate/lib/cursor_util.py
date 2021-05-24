@@ -1,12 +1,12 @@
 from io import BytesIO
 from typing import BinaryIO
-
-from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
-import cairosvg
-from PIL import Image, ImageOps
-from CursorCreate.lib import format_core
 from xml.etree import ElementTree
-from PIL import ImageSequence
+
+import cairosvg
+from PIL import Image, ImageOps, ImageSequence
+
+from CursorCreate.lib import format_core
+from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 
 # Some versions of pillow don't actually have this error, so just set this exception to the general case in this case.
 try:
@@ -14,10 +14,10 @@ try:
 except ImportError as e:
     UnidentifiedImageError = Exception
 
-
 # Default sizes which all cursors loaded with this module are normalized with...
 DEFAULT_SIZES = [(32, 32), (48, 48), (64, 64), (128, 128)]
 MAX_DEFAULT_SIZE = DEFAULT_SIZES[-1]
+
 
 def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
     """
@@ -33,9 +33,9 @@ def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
     """
     image: Image.Image = Image.open(file)
 
-    if(hasattr(image, "is_animated") and (image.is_animated)):
+    if hasattr(image, "is_animated") and (image.is_animated):
         # If this is an animated file, load in each frame as the frames of the cursor (Ex, ".gif")
-        min_dim = min(image.size) # We fit the image to a square...
+        min_dim = min(image.size)  # We fit the image to a square...
         images_durations = [(ImageOps.fit(image, (min_dim, min_dim)), frame.info.get("duration", 100))
                             for frame in ImageSequence.Iterator(image)]
     else:
@@ -43,7 +43,7 @@ def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
         height = image.size[1]
         num_frames = image.size[0] // height
 
-        if(num_frames == 0):
+        if num_frames == 0:
             raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
 
         images_durations = [(image.crop((i * height, 0, i * height + height, height)), 100) for i in range(num_frames)]
@@ -82,7 +82,7 @@ def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
     h_to_w_multiplier = size_ref_img.size[0] / size_ref_img.size[1]
     num_frames = int(h_to_w_multiplier)
 
-    if (num_frames == 0):
+    if num_frames == 0:
         raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
 
     # Build empty animated cursor to start stashing frames in...
@@ -120,14 +120,14 @@ def load_cursor_from_cursor(file: BinaryIO) -> AnimatedCursor:
     file.seek(0)
 
     for reader in ani_cur_readers:
-        if(reader.check(magic)):
+        if reader.check(magic):
             ani_cur = reader.read(file)
             ani_cur.normalize(DEFAULT_SIZES)
             ani_cur.remove_non_square_sizes()
             return ani_cur
 
     for reader in cur_readers:
-        if(reader.check(magic)):
+        if reader.check(magic):
             ani_cur = AnimatedCursor([reader.read(file)], [100])
             ani_cur.normalize(DEFAULT_SIZES)
             ani_cur.remove_non_square_sizes()
@@ -153,7 +153,7 @@ def load_cursor(file: BinaryIO):
         file.seek(0)
         try:
             return load_cursor_from_image(file)
-        except (UnidentifiedImageError):
+        except UnidentifiedImageError:
             file.seek(0)
             try:
                 return load_cursor_from_svg(file)

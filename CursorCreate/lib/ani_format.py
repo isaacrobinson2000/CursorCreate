@@ -1,13 +1,15 @@
 from io import BytesIO
-from typing import BinaryIO, Iterator, Tuple, Set, Dict, Any
-from CursorCreate.lib.format_core import AnimatedCursorStorageFormat, to_int, to_bytes
+from typing import Any, BinaryIO, Dict, Iterator, Set, Tuple
+
 from PIL import BmpImagePlugin
+
 from CursorCreate.lib.cur_format import CurFormat
-from CursorCreate.lib.cursor import CursorIcon, Cursor, AnimatedCursor
+from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
+from CursorCreate.lib.format_core import AnimatedCursorStorageFormat, to_bytes, to_int
 
 
 # UTILITY METHODS:
-def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes]=None, list_chunks: Set[bytes]=None, byteorder="little") -> Iterator[Tuple[bytes, int, bytes]]:
+def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes] = None, list_chunks: Set[bytes] = None, byteorder="little") -> Iterator[Tuple[bytes, int, bytes]]:
     """
     Reads a valid RIFF file, reading all the chunks in the file...
 
@@ -19,28 +21,28 @@ def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes]=None, list_chunks: Set
     :param byteorder: The byteorder of the integers in the file, "big" or "little". Default is "little".
     :return: A generator which yields each chunks identifier, size, and data as bytes.
     """
-    if(skip_chunks is None):
+    if skip_chunks is None:
         skip_chunks = set()
-    if(list_chunks is None):
+    if list_chunks is None:
         list_chunks = set()
 
-    while(True):
+    while True:
         next_id = buffer.read(4)
-        if(next_id == b''):
+        if next_id == b'':
             return
-        if(next_id in skip_chunks):
+        if next_id in skip_chunks:
             continue
 
         size = to_int(buffer.read(4), byteorder=byteorder)
 
-        if(next_id in list_chunks):
+        if next_id in list_chunks:
             # print(f"(entering {next_id} chunk) -> [")
             yield from read_chunks(BytesIO(buffer.read(size)), skip_chunks, list_chunks, byteorder)
             # print(f"](exiting {next_id} chunk)")
             continue
 
         # print(f"emit chunk {next_id} of size {size}")
-        yield (next_id, size, buffer.read(size))
+        yield next_id, size, buffer.read(size)
 
 
 def write_chunk(buffer: BinaryIO, chunk_id: bytes, chunk_data: bytes, byteorder="little"):
@@ -61,10 +63,10 @@ def _header_chunk(header: None, data: bytes, data_out: Dict[str, Any]):
     """
     Represents .ani's header chunk, which has an identifier of "anih".
     """
-    if(header is not None):
+    if header is not None:
         raise SyntaxError("This ani has 2 headers!")
 
-    if(len(data) == 36):
+    if len(data) == 36:
         data = data[4:]
 
     h_data = {
@@ -88,10 +90,10 @@ def _icon_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     """
     Represents .ani icon chunk, which has an identifier of "icon".
     """
-    if(header is None):
+    if header is None:
         raise SyntaxError("icon chunk became before header!")
 
-    if(header["is_in_ico"]):
+    if header["is_in_ico"]:
         # Cursors are stored as either .cur or .ico, use CurFormat to read them...
         cursor = CurFormat.read(BytesIO(data))
     else:
@@ -103,7 +105,7 @@ def _icon_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
         # Add the image to the cursor list...
         cursor = Cursor([c_icon])
 
-    if("list" not in data_out):
+    if "list" not in data_out:
         data_out["list"] = []
 
     data_out["list"].append(cursor)
@@ -113,26 +115,27 @@ def _seq_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     """
     Represents .ani's sequence chunk, which has an identifier of "seq ".
     """
-    if(header is None):
+    if header is None:
         raise SyntaxError("seq chunk came before header!")
 
-    if((len(data) // 4) != header["num_steps"]):
+    if (len(data) // 4) != header["num_steps"]:
         raise SyntaxError("Length of sequence chunk does not match the number of steps!")
 
-    data_out["seq"] = [to_int(data[i:i+4]) for i in range(0, len(data), 4)]
+    data_out["seq"] = [to_int(data[i:i + 4]) for i in range(0, len(data), 4)]
 
 
 def _rate_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     """
     Represents .ani's rate chunk, which has an identifier of "rate".
     """
-    if(header is None):
+    if header is None:
         raise SyntaxError("rate chunk became before header!")
 
-    if((len(data) // 4) != header["num_steps"]):
+    if (len(data) // 4) != header["num_steps"]:
         raise SyntaxError("Length of rate chunk does not match the number of steps!")
 
-    data_out["rate"] = [to_int(data[i:i+4]) for i in range(0, len(data), 4)]
+    data_out["rate"] = [to_int(data[i:i + 4]) for i in range(0, len(data), 4)]
+
 
 class AniFormat(AnimatedCursorStorageFormat):
     """
@@ -162,7 +165,7 @@ class AniFormat(AnimatedCursorStorageFormat):
         :param first_bytes: The first 12 bytes of the file being tested.
         :return: True if a valid windows .ani file, otherwise False.
         """
-        return ((first_bytes[:4] == cls.RIFF_MAGIC) and (first_bytes[8:12] == cls.ACON_MAGIC))
+        return (first_bytes[:4] == cls.RIFF_MAGIC) and (first_bytes[8:12] == cls.ACON_MAGIC)
 
     @classmethod
     def read(cls, cur_file: BinaryIO) -> AnimatedCursor:
@@ -174,13 +177,13 @@ class AniFormat(AnimatedCursorStorageFormat):
         """
         magic_header = cur_file.read(12)
 
-        if(not cls.check(magic_header)):
+        if not cls.check(magic_header):
             raise SyntaxError("Not a .ani file!")
 
         ani_data: Dict[str, Any] = {"header": None}
 
         for chunk_id, chunk_len, chunk_data in read_chunks(cur_file, {b"fram"}, {b"LIST"}):
-            if(chunk_id in cls.CHUNKS):
+            if chunk_id in cls.CHUNKS:
                 cls.CHUNKS[chunk_id](ani_data["header"], chunk_data, ani_data)
 
         ani_cur = AnimatedCursor()
@@ -190,7 +193,6 @@ class AniFormat(AnimatedCursorStorageFormat):
             ani_cur.append((ani_data["list"][idx], int((rate * 1000) / 60)))
 
         return ani_cur
-
 
     @classmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):

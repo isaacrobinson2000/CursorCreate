@@ -1,18 +1,19 @@
-from io import BytesIO
-from pathlib import Path
-from typing import Union, Dict, Any
-from PySide2 import QtWidgets, QtCore, QtGui
-from CursorCreate.lib import theme_util
-from CursorCreate.gui.cursorselector import CursorSelectWidget
-from CursorCreate.gui.layouts import FlowLayout
-from CursorCreate.lib.cur_theme import CursorThemeBuilder
-from PIL.ImageQt import ImageQt
-from PIL import Image
-import copy
 import base64
+import copy
 import re
 import sys
+from io import BytesIO
+from pathlib import Path
+from typing import Any, Dict, Union
 
+from PIL import Image
+from PIL.ImageQt import ImageQt
+from PySide2 import QtCore, QtGui, QtWidgets
+
+from CursorCreate.gui.cursorselector import CursorSelectWidget
+from CursorCreate.gui.layouts import FlowLayout
+from CursorCreate.lib import theme_util
+from CursorCreate.lib.cur_theme import CursorThemeBuilder
 
 ICON = """
 iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAIlElEQVR42u1ZWUyb6RWl+zxUrdSR
@@ -56,6 +57,7 @@ rLOHWmSEDZzJdkW9CgUiORFeyijwanG1KjunquV7u3aJP7ejviRJyfpQcOlKGWpkKtQpeths5wqb
 QJVcSy+T1lHwuyuVmpcTduqxWBZfSU7ND/MEDYy7jFDQLl6lolDSM/7ifN+cwiv/DU2rBuLOr3IF
 PV9L+PT8n51/ADoCxpfaGXQMAAAAAElFTkSuQmCC
 """
+
 
 class CursorThemeMaker(QtWidgets.QWidget):
 
@@ -129,13 +131,13 @@ class CursorThemeMaker(QtWidgets.QWidget):
         dir_picker.exec_()
         directory_info = dir_picker.get_results()
 
-        if(directory_info is not None):
+        if directory_info is not None:
             theme_name, theme_dir = directory_info
             files_and_cursors = {}
 
             for cursor_name, selector in self._cursor_selectors.items():
-                if(selector.current_cursor is not None):
-                    c_f_path = Path(selector.current_file) if(selector.current_file is not None) else None
+                if selector.current_cursor is not None:
+                    c_f_path = Path(selector.current_file) if (selector.current_file is not None) else None
                     files_and_cursors[cursor_name] = (c_f_path, selector.current_cursor)
 
             theme_util.save_project(theme_name, theme_dir, self._metadata, files_and_cursors)
@@ -148,18 +150,18 @@ class CursorThemeMaker(QtWidgets.QWidget):
         dir_picker.exec_()
         directory_info = dir_picker.get_results()
 
-        if(directory_info is not None):
+        if directory_info is not None:
             theme_name, theme_dir = directory_info
             cursors = {}
 
             for cursor_name, selector in self._cursor_selectors.items():
-                if(selector.current_cursor is not None):
+                if selector.current_cursor is not None:
                     cursors[cursor_name] = selector.current_cursor
 
             theme_util.build_theme(theme_name, theme_dir, self._metadata, cursors)
 
     def build_in_place(self):
-        if(self._open_build_project is None):
+        if self._open_build_project is None:
             return
 
         project_folder = Path(self._open_build_project).parent
@@ -168,7 +170,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
         cursors = {}
 
         for cursor_name, selector in self._cursor_selectors.items():
-            if (selector.current_cursor is not None):
+            if selector.current_cursor is not None:
                 cursors[cursor_name] = selector.current_cursor
 
         theme_util.build_theme(theme_name, dir_path, self._metadata, cursors)
@@ -176,7 +178,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Cursor Theme Maker", f"Project '{self._open_build_project}' Built!!!")
 
     def update_project(self):
-        if(self._open_build_project is None):
+        if self._open_build_project is None:
             return
 
         path_total = Path(self._open_build_project).parent
@@ -185,7 +187,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
         files_and_cursors = {}
 
         for cursor_name, selector in self._cursor_selectors.items():
-            if (selector.current_cursor is not None):
+            if selector.current_cursor is not None:
                 c_f_path = Path(selector.current_file) if (selector.current_file is not None) else None
                 files_and_cursors[cursor_name] = (c_f_path, selector.current_cursor)
 
@@ -200,14 +202,13 @@ class CursorThemeMaker(QtWidgets.QWidget):
 
         self.load_from_path(file_name)
 
-
     def load_from_path(self, file_name: str):
-        if(file_name != ""):
+        if file_name != "":
             try:
                 metadata, data = theme_util.load_project(Path(file_name))
 
                 for name, (path, cursor) in data.items():
-                    if(name in self._cursor_selectors):
+                    if name in self._cursor_selectors:
                         self._cursor_selectors[name].current_cursor = cursor
                         self._cursor_selectors[name].current_file = str(path)
 
@@ -234,8 +235,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
 
 
 class DirectoryPicker(QtWidgets.QDialog):
-
-    IS_VALID_THEME_NAME = re.compile("[-.\w ]+")
+    IS_VALID_THEME_NAME = re.compile(r"[-.\w ]+")
 
     def __init__(self, parent=None, name=""):
         super().__init__(parent)
@@ -264,7 +264,7 @@ class DirectoryPicker(QtWidgets.QDialog):
 
         self.setLayout(self._form_layout)
 
-        self._button.clicked.connect(self.openDir)
+        self._button.clicked.connect(self.open_dir)
 
         self._submit_btns.rejected.connect(self.reject)
         self._submit_btns.accepted.connect(self.accept)
@@ -273,7 +273,7 @@ class DirectoryPicker(QtWidgets.QDialog):
         self.accepted.connect(self.on_submit_stuff)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
-    def openDir(self):
+    def open_dir(self):
         sel_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a Directory")
         self._text.setText(sel_dir)
         self.validate()
@@ -284,7 +284,7 @@ class DirectoryPicker(QtWidgets.QDialog):
 
         path_exists = (Path(dir_name) / folder_name).exists()
 
-        if(self.IS_VALID_THEME_NAME.fullmatch(folder_name) and (dir_name != "") and (not path_exists)):
+        if self.IS_VALID_THEME_NAME.fullmatch(folder_name) and (dir_name != "") and (not path_exists):
             self._submit_btns.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
         else:
             self._submit_btns.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
@@ -297,26 +297,25 @@ class DirectoryPicker(QtWidgets.QDialog):
 
 
 class MetaDataEdit(QtWidgets.QDialog):
-
     FILE_PICKER_FILTER = "Text Files (*.txt)"
     TITLE = "CursorCreate Metadata"
 
-    def __init__(self, parent=None, metadata: Dict[str, Any]=None):
+    def __init__(self, parent=None, metadata: Dict[str, Any] = None):
         super().__init__(parent)
         super().setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint)
         self.setWindowTitle(self.TITLE)
 
-        if(metadata is None):
+        if metadata is None:
             self._metadata = {"author": None, "licence": None}
         else:
             self._metadata = copy.deepcopy(metadata)
 
         self._main_layout = QtWidgets.QFormLayout(self)
         self._author = QtWidgets.QLineEdit()
-        self._author.setText("" if(self._metadata.get("author", None) is None) else self._metadata["author"])
+        self._author.setText("" if (self._metadata.get("author", None) is None) else self._metadata["author"])
 
         self._licence_text = QtWidgets.QTextEdit()
-        self._licence_text.setText("" if(self._metadata.get("licence", None) is None) else self._metadata["licence"])
+        self._licence_text.setText("" if (self._metadata.get("licence", None) is None) else self._metadata["licence"])
 
         self._licence_btn = QtWidgets.QPushButton("From File")
 
@@ -336,7 +335,7 @@ class MetaDataEdit(QtWidgets.QDialog):
     def _on_file_req(self):
         path, __ = QtWidgets.QFileDialog.getOpenFileName(self, "Select a Licence File", filter=self.FILE_PICKER_FILTER)
 
-        if(path != ""):
+        if path != "":
             try:
                 with open(path) as f:
                     self._licence_text.setText(f.read())
@@ -344,8 +343,8 @@ class MetaDataEdit(QtWidgets.QDialog):
                 print(e)
 
     def _on_accept(self):
-        self._metadata["author"] = None if(self._author.text() == "") else self._author.text()
-        self._metadata["licence"] = None if(self._licence_text.toPlainText() == "") else self._licence_text.toPlainText()
+        self._metadata["author"] = None if (self._author.text() == "") else self._author.text()
+        self._metadata["licence"] = None if (self._licence_text.toPlainText() == "") else self._licence_text.toPlainText()
         self.accept()
 
     def get_metadata(self):
@@ -357,7 +356,7 @@ def launch_gui(def_project: Union[str, None]):
     window = CursorThemeMaker()
     window.show()
 
-    if(def_project is not None):
+    if def_project is not None:
         window.load_from_path(def_project)
 
     app.exec_()

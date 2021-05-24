@@ -1,12 +1,13 @@
-from CursorCreate.gui.cursorviewer import CursorDisplayWidget
-from CursorCreate.lib.cursor import AnimatedCursor
-from PySide2 import QtWidgets, QtCore, QtGui
 from PIL import ImageQt
+from PySide2 import QtCore, QtGui, QtWidgets
+
+from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 from CursorCreate.lib import cursor_util
+from CursorCreate.lib.cursor import AnimatedCursor
 
 
 class CursorPreviewDialog(QtWidgets.QDialog):
-    def __init__(self, parent=None, cursor: AnimatedCursor=None):
+    def __init__(self, parent=None, cursor: AnimatedCursor = None):
         super().__init__(parent)
         super().setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint)
 
@@ -51,7 +52,6 @@ class CursorPreviewDialog(QtWidgets.QDialog):
 
 
 class PreviewArea(QtWidgets.QWidget):
-
     CURSOR_SIZE = (32, 32)
 
     def __init__(self, parent, cursor: AnimatedCursor):
@@ -78,16 +78,16 @@ class PreviewArea(QtWidgets.QWidget):
 
     def moveStep(self):
         self._current_frame = (self._current_frame + 1) % len(self._delays)
-        if(len(self._pixmaps) > 0):
+        if len(self._pixmaps) > 0:
             self.setCursor(QtGui.QCursor(self._pixmaps[self._current_frame], *self._hotspots[self._current_frame]))
-        if(len(self._pixmaps) > 1):
+        if len(self._pixmaps) > 1:
             self._animation_timer.setInterval(self._delays[self._current_frame])
             self._animation_timer.start()
 
     def paintEvent(self, event: QtGui.QPaintEvent):
         self._core_painter.begin(self)
 
-        if(self._hotspot_preview_loc is not None):
+        if self._hotspot_preview_loc is not None:
             self._core_painter.setPen(QtGui.QColor(0, 0, 0, 0))
             colors = [(0, 0, 255, 100), (0, 255, 0, 200), (255, 0, 0, 255)]
             widths = [20, 8, 3]
@@ -97,19 +97,18 @@ class PreviewArea(QtWidgets.QWidget):
 
         self._core_painter.end()
 
-
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         self._pressed = True
         self._hotspot_preview_loc = (event.x(), event.y())
         self.update()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
-        if(self._pressed):
+        if self._pressed:
             self._hotspot_preview_loc = (event.x(), event.y())
             self.update()
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
-        if(self._pressed):
+        if self._pressed:
             self.mouseMoveEvent(event)
             self._pressed = False
 

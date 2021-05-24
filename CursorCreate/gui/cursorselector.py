@@ -1,14 +1,15 @@
-from PySide2 import QtWidgets, QtGui, QtCore
-from CursorCreate.lib.cursor_util import load_cursor
-from CursorCreate.gui.cursorviewedit import CursorViewEditWidget
-from urllib.request import urlopen
-from urllib.error import URLError
-from io import BytesIO
 import pathlib
+from io import BytesIO
+from urllib.error import URLError
+from urllib.request import urlopen
+
+from PySide2 import QtCore, QtGui, QtWidgets
+
+from CursorCreate.gui.cursorviewedit import CursorViewEditWidget
+from CursorCreate.lib.cursor_util import load_cursor
 
 
 class CursorSelectWidget(QtWidgets.QFrame):
-
     FILE_DIALOG_TYPES = "Image, Cursor, or SVG (*)"
 
     def __init__(self, parent=None, label_text="Label", def_cursor=None, *args, **kwargs):
@@ -42,12 +43,11 @@ class CursorSelectWidget(QtWidgets.QFrame):
         self.setAcceptDrops(True)
 
         # Events...
-        self._file_sel_btn.clicked.connect(self.openFile)
+        self._file_sel_btn.clicked.connect(self.open_file)
 
-
-    def openFile(self):
+    def open_file(self):
         path, __ = QtWidgets.QFileDialog.getOpenFileName(self, "Select a Cursor", filter=self.FILE_DIALOG_TYPES)
-        if(path != ""):
+        if path != "":
             with open(path, "rb") as f:
                 try:
                     self.current_cursor = load_cursor(f)
@@ -57,22 +57,22 @@ class CursorSelectWidget(QtWidgets.QFrame):
                     return
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
-        if(event.mimeData().hasImage() or event.mimeData().hasUrls()):
+        if event.mimeData().hasImage() or event.mimeData().hasUrls():
             event.acceptProposedAction()
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent):
         self.dragEnterEvent(event)
 
     def dropEvent(self, event: QtGui.QDropEvent):
-        if(event.mimeData().hasUrls()):
+        if event.mimeData().hasUrls():
             cursor = None
             working_path = None
 
             for cur_path in event.mimeData().urls():
-                if(cur_path.isLocalFile()):
+                if cur_path.isLocalFile():
                     path = cur_path.path(options=QtCore.QUrl.FullyDecoded)
 
-                    if(isinstance(pathlib.PurePath(), pathlib.PureWindowsPath) and path.startswith("/")):
+                    if isinstance(pathlib.PurePath(), pathlib.PureWindowsPath) and path.startswith("/"):
                         path = path[1:]
 
                     with open(path, "rb") as f:
@@ -91,13 +91,13 @@ class CursorSelectWidget(QtWidgets.QFrame):
                     except (URLError, ValueError) as e:
                         print(e)
 
-            if(cursor is not None):
+            if cursor is not None:
                 self.current_cursor = cursor
                 self._current_file = working_path
                 event.acceptProposedAction()
                 return
 
-        if(event.mimeData().hasImage()):
+        if event.mimeData().hasImage():
             mem_img = BytesIO()
             buffer = QtCore.QBuffer()
             image = QtGui.QImage(event.mimeData().imageData())
@@ -110,7 +110,6 @@ class CursorSelectWidget(QtWidgets.QFrame):
             self._current_file = None
             event.acceptProposedAction()
             return
-
 
     @property
     def current_cursor(self):
@@ -134,13 +133,13 @@ class CursorSelectWidget(QtWidgets.QFrame):
 
     @current_file.setter
     def current_file(self, value):
-        if((not isinstance(value, str)) and (value is not None)):
+        if (not isinstance(value, str)) and (value is not None):
             raise ValueError("The file path must be a string!!!")
 
         self._current_file = value
 
 
-if(__name__ == "__main__"):
+if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     window = CursorSelectWidget(label_text="wait")
     window.show()

@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import BinaryIO
+
 from CursorCreate.lib.cursor import AnimatedCursor, Cursor
 
 
-def to_bytes(num: int, length: int, byteorder: str="little") -> bytes:
+def to_bytes(num: int, length: int, byteorder: str = "little") -> bytes:
     """
     Encode a python integer object as a unsigned n-bit length integer, stored in a bytes object
 
@@ -14,7 +15,8 @@ def to_bytes(num: int, length: int, byteorder: str="little") -> bytes:
     """
     return int.to_bytes(num, length, byteorder)
 
-def to_int(b: bytes, byteorder: str="little") -> int:
+
+def to_int(b: bytes, byteorder: str = "little") -> int:
     """
     Read in bytes as an unsigned integer...
 
@@ -23,6 +25,7 @@ def to_int(b: bytes, byteorder: str="little") -> int:
     :return: An integer, represented by the bytes...
     """
     return int.from_bytes(b, byteorder)
+
 
 def to_signed_int(b, byteorder="little"):
     """
@@ -37,10 +40,11 @@ def to_signed_int(b, byteorder="little"):
     signed_limit = (power // 2) - 1
     print(new_int, power, signed_limit)
 
-    if(new_int > signed_limit):
+    if new_int > signed_limit:
         new_int = -(power - new_int)
 
     return new_int
+
 
 def to_signed_bytes(num, length, byteorder="little"):
     """
@@ -55,10 +59,11 @@ def to_signed_bytes(num, length, byteorder="little"):
     limit = power // 2
     num = int(num)
 
-    if(not (-limit <= num < limit)):
+    if not (-limit <= num < limit):
         raise ValueError(f"Integer {num} must be between {-limit} and {limit - 1}")
 
     return to_bytes((power + num) % power, length, byteorder)
+
 
 class CursorStorageFormat(ABC):
     """
@@ -114,7 +119,6 @@ class CursorStorageFormat(ABC):
 
 
 class AnimatedCursorStorageFormat(ABC):
-
     __ERROR_MSG = "Subclass doesn't implement this method!!!"
 
     @classmethod

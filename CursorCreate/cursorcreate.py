@@ -5,8 +5,8 @@ available...
 
 # TODO: Add progress bars to things...
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # We try to import lib for CursorCreate, if it fails we attempt to add our parent's parent to the path and try again.
 # This allows for execution via the command line.
@@ -23,6 +23,7 @@ except ImportError as exp:
     print(repr(exp))
     launch_gui = None
 
+
 def print_help():
     """
     Print the usage info for CursorMaker to the command line.
@@ -36,15 +37,16 @@ def print_help():
     print("'--open FILE': Open the specified cursor project in the GUI by providing the json file...")
     # TODO: print("'--convert INPUT_FILE OUTPUT_FILE FORMAT': Convert")
 
+
 def main():
     """
     Main method of the cursor maker program. Parses the first flag and figures out what to do based on it...
     """
     args = sys.argv[1:]
 
-    if(len(args) == 0):
+    if len(args) == 0:
         # No arguments, launch the gui if possible
-        if(launch_gui is not None):
+        if launch_gui is not None:
             launch_gui(None)
         else:
             print("Unable to import and run gui, check if PySide2 is installed...")
@@ -52,12 +54,12 @@ def main():
         return
 
     # --help, print the help info...
-    if(args[0] == "--help"):
+    if args[0] == "--help":
         print_help()
     # --open, grab next argument, and attempt to have gui open it...
-    elif(args[0] == "--open"):
-        if(len(args) > 1):
-            if(launch_gui is not None):
+    elif args[0] == "--open":
+        if len(args) > 1:
+            if launch_gui is not None:
                 launch_gui(args[1])
             else:
                 print("Unable to import and run gui, check if PySide2 is installed...")
@@ -65,7 +67,7 @@ def main():
             print("No file provided...")
             launch_gui(None)
     # --build, load in the project file and build the theme in place using utils api...
-    elif(args[0] == "--build"):
+    elif args[0] == "--build":
         for config_file in args[1:]:
             try:
                 config_path = Path(config_file).resolve()
@@ -81,5 +83,5 @@ def main():
         print_help()
 
 
-if(__name__ == "__main__"):
+if __name__ == "__main__":
     main()
