@@ -14,7 +14,12 @@ CURRENT_FORMAT_VERSION = 1
 CURRENT_FORMAT_NAME = "cursor_build_file"
 
 
-def build_theme(theme_name: str, directory: Path, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor]):
+def build_theme(
+    theme_name: str,
+    directory: Path,
+    metadata: Dict[str, Any],
+    cursor_dict: Dict[str, AnimatedCursor],
+):
     """
     Build the specified theme using all currently loaded theme builders, building it for all platforms...
 
@@ -90,7 +95,12 @@ def _disable_newlines(json_data: str, num_lines_in: int) -> str:
     return "".join(json_data)
 
 
-def save_project(theme_name: str, directory: Path, metadata: Dict[str, Any], file_dict: Dict[str, Tuple[Path, AnimatedCursor]]):
+def save_project(
+    theme_name: str,
+    directory: Path,
+    metadata: Dict[str, Any],
+    file_dict: Dict[str, Tuple[Path, AnimatedCursor]],
+):
     """
     Save the cursor project to the cursor project format, which includes all source images and a build.json which
     specifies how to build the platform dependent cursor themes from the source images.
@@ -111,7 +121,7 @@ def save_project(theme_name: str, directory: Path, metadata: Dict[str, Any], fil
         "format": CURRENT_FORMAT_NAME,
         "version": CURRENT_FORMAT_VERSION,
         "metadata": metadata,
-        "data": []
+        "data": [],
     }
 
     for name, (file, cursor) in file_dict.items():
@@ -125,18 +135,24 @@ def save_project(theme_name: str, directory: Path, metadata: Dict[str, Any], fil
             new_file = build_theme_in / (name + ".png")
             _make_image(cursor).save(str(new_file), "PNG")
 
-        json_obj["data"].append({
-            "cursor_name": name,
-            "cursor_file": new_file.name,
-            "hotspots_64": [sub_cursor[(64, 64)].hotspot for sub_cursor, delay in cursor],
-            "delays": [delay for sub_cursor, delay in cursor],
-        })
+        json_obj["data"].append(
+            {
+                "cursor_name": name,
+                "cursor_file": new_file.name,
+                "hotspots_64": [
+                    sub_cursor[(64, 64)].hotspot for sub_cursor, delay in cursor
+                ],
+                "delays": [delay for sub_cursor, delay in cursor],
+            }
+        )
 
     with (build_theme_in / "build.json").open("w") as fp:
         fp.write(_disable_newlines(json.dumps(json_obj, indent=4), 4))
 
 
-def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Dict[str, Tuple[Path, AnimatedCursor]]]]:
+def load_project(
+    theme_build_file: Path,
+) -> Union[None, Tuple[Dict[str, Any], Dict[str, Tuple[Path, AnimatedCursor]]]]:
     """
     Load a cursor theme project from it's build.json file, and return it's (source file, cursor) dictionary...
 
@@ -151,8 +167,12 @@ def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Di
     with theme_build_file.open("r") as f:
         json_build_data = json.load(f)
 
-        is_format = ("format" in json_build_data) and (json_build_data["format"] == CURRENT_FORMAT_NAME)
-        is_version = ("version" in json_build_data) and (json_build_data["version"] == CURRENT_FORMAT_VERSION)
+        is_format = ("format" in json_build_data) and (
+            json_build_data["format"] == CURRENT_FORMAT_NAME
+        )
+        is_version = ("version" in json_build_data) and (
+            json_build_data["version"] == CURRENT_FORMAT_VERSION
+        )
 
         file_cur_dict = {}
 
@@ -178,7 +198,9 @@ def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Di
 
             for hotspot, (sub_cursor, delay) in zip(cursor_info["hotspots_64"], cursor):
                 for size in sub_cursor:
-                    x_hot, y_hot = int((size[0] / 64) * hotspot[0]), int((size[1] / 64) * hotspot[1])
+                    x_hot, y_hot = int((size[0] / 64) * hotspot[0]), int(
+                        (size[1] / 64) * hotspot[1]
+                    )
                     sub_cursor[size].hotspot = (x_hot, y_hot)
 
             file_cur_dict[cursor_info["cursor_name"]] = (cursor_path, cursor)

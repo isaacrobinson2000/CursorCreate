@@ -60,7 +60,6 @@ PV9L+PT8n51/ADoCxpfaGXQMAAAAAElFTkSuQmCC
 
 
 class CursorThemeMaker(QtWidgets.QWidget):
-
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
@@ -86,7 +85,9 @@ class CursorThemeMaker(QtWidgets.QWidget):
         self._cursor_selectors = {}
 
         for cursor_name in sorted(CursorThemeBuilder.DEFAULT_CURSORS):
-            self._cursor_selectors[cursor_name] = CursorSelectWidget(label_text=cursor_name)
+            self._cursor_selectors[cursor_name] = CursorSelectWidget(
+                label_text=cursor_name
+            )
             self._flow_layout.addWidget(self._cursor_selectors[cursor_name])
 
         self._edit_metadata = QtWidgets.QPushButton("Edit Artist Info")
@@ -137,11 +138,19 @@ class CursorThemeMaker(QtWidgets.QWidget):
 
             for cursor_name, selector in self._cursor_selectors.items():
                 if selector.current_cursor is not None:
-                    c_f_path = Path(selector.current_file) if (selector.current_file is not None) else None
+                    c_f_path = (
+                        Path(selector.current_file)
+                        if (selector.current_file is not None)
+                        else None
+                    )
                     files_and_cursors[cursor_name] = (c_f_path, selector.current_cursor)
 
-            theme_util.save_project(theme_name, theme_dir, self._metadata, files_and_cursors)
-            self._open_build_project = str((Path(theme_dir) / theme_name) / "build.json")
+            theme_util.save_project(
+                theme_name, theme_dir, self._metadata, files_and_cursors
+            )
+            self._open_build_project = str(
+                (Path(theme_dir) / theme_name) / "build.json"
+            )
             self._update_proj_btn.setEnabled(True)
             self._build_in_place.setEnabled(True)
 
@@ -175,7 +184,9 @@ class CursorThemeMaker(QtWidgets.QWidget):
 
         theme_util.build_theme(theme_name, dir_path, self._metadata, cursors)
 
-        QtWidgets.QMessageBox.information(self, "Cursor Theme Maker", f"Project '{self._open_build_project}' Built!!!")
+        QtWidgets.QMessageBox.information(
+            self, "Cursor Theme Maker", f"Project '{self._open_build_project}' Built!!!"
+        )
 
     def update_project(self):
         if self._open_build_project is None:
@@ -188,17 +199,27 @@ class CursorThemeMaker(QtWidgets.QWidget):
 
         for cursor_name, selector in self._cursor_selectors.items():
             if selector.current_cursor is not None:
-                c_f_path = Path(selector.current_file) if (selector.current_file is not None) else None
+                c_f_path = (
+                    Path(selector.current_file)
+                    if (selector.current_file is not None)
+                    else None
+                )
                 files_and_cursors[cursor_name] = (c_f_path, selector.current_cursor)
 
         theme_util.save_project(theme_name, dir_path, self._metadata, files_and_cursors)
 
-        QtWidgets.QMessageBox.information(self, "Cursor Theme Maker",
-                                          f"Project '{self._open_build_project}' Updated!!!")
+        QtWidgets.QMessageBox.information(
+            self,
+            "Cursor Theme Maker",
+            f"Project '{self._open_build_project}' Updated!!!",
+        )
 
     def load_project(self):
-        file_name, __ = QtWidgets.QFileDialog.getOpenFileName(self, "Select the build file for the project.",
-                                                              filter="JSON Build File (*.json)")
+        file_name, __ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Select the build file for the project.",
+            filter="JSON Build File (*.json)",
+        )
 
         self.load_from_path(file_name)
 
@@ -257,8 +278,9 @@ class DirectoryPicker(QtWidgets.QDialog):
         self._form_layout.addRow("Theme Name:", self._theme_text)
         self._form_layout.addRow("Theme Directory:", self._hbox_layout)
 
-        self._submit_btns = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Cancel |
-                                                       QtWidgets.QDialogButtonBox.Ok)
+        self._submit_btns = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok
+        )
         self._submit_btns.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
         self._form_layout.addRow(self._submit_btns)
 
@@ -284,13 +306,20 @@ class DirectoryPicker(QtWidgets.QDialog):
 
         path_exists = (Path(dir_name) / folder_name).exists()
 
-        if self.IS_VALID_THEME_NAME.fullmatch(folder_name) and (dir_name != "") and (not path_exists):
+        if (
+            self.IS_VALID_THEME_NAME.fullmatch(folder_name)
+            and (dir_name != "")
+            and (not path_exists)
+        ):
             self._submit_btns.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
         else:
             self._submit_btns.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
 
     def on_submit_stuff(self):
-        self._result = self._theme_text.text().strip(), Path(self._text.text().strip()).resolve()
+        self._result = (
+            self._theme_text.text().strip(),
+            Path(self._text.text().strip()).resolve(),
+        )
 
     def get_results(self):
         return self._result
@@ -312,15 +341,24 @@ class MetaDataEdit(QtWidgets.QDialog):
 
         self._main_layout = QtWidgets.QFormLayout(self)
         self._author = QtWidgets.QLineEdit()
-        self._author.setText("" if (self._metadata.get("author", None) is None) else self._metadata["author"])
+        self._author.setText(
+            ""
+            if (self._metadata.get("author", None) is None)
+            else self._metadata["author"]
+        )
 
         self._licence_text = QtWidgets.QTextEdit()
-        self._licence_text.setText("" if (self._metadata.get("licence", None) is None) else self._metadata["licence"])
+        self._licence_text.setText(
+            ""
+            if (self._metadata.get("licence", None) is None)
+            else self._metadata["licence"]
+        )
 
         self._licence_btn = QtWidgets.QPushButton("From File")
 
-        self._submit_btns = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Cancel |
-                                                       QtWidgets.QDialogButtonBox.Ok)
+        self._submit_btns = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok
+        )
 
         self._main_layout.addRow("Author:", self._author)
         self._main_layout.addRow("Licence:", self._licence_btn)
@@ -333,7 +371,9 @@ class MetaDataEdit(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
     def _on_file_req(self):
-        path, __ = QtWidgets.QFileDialog.getOpenFileName(self, "Select a Licence File", filter=self.FILE_PICKER_FILTER)
+        path, __ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Select a Licence File", filter=self.FILE_PICKER_FILTER
+        )
 
         if path != "":
             try:
@@ -343,8 +383,14 @@ class MetaDataEdit(QtWidgets.QDialog):
                 print(e)
 
     def _on_accept(self):
-        self._metadata["author"] = None if (self._author.text() == "") else self._author.text()
-        self._metadata["licence"] = None if (self._licence_text.toPlainText() == "") else self._licence_text.toPlainText()
+        self._metadata["author"] = (
+            None if (self._author.text() == "") else self._author.text()
+        )
+        self._metadata["licence"] = (
+            None
+            if (self._licence_text.toPlainText() == "")
+            else self._licence_text.toPlainText()
+        )
         self.accept()
 
     def get_metadata(self):

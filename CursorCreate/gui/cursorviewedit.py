@@ -5,7 +5,6 @@ from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 
 
 class CursorViewEditWidget(CursorDisplayWidget):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setCursor(QtGui.Qt.PointingHandCursor)

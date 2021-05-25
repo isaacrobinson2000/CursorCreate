@@ -9,7 +9,12 @@ from CursorCreate.lib.format_core import AnimatedCursorStorageFormat, to_bytes, 
 
 
 # UTILITY METHODS:
-def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes] = None, list_chunks: Set[bytes] = None, byteorder="little") -> Iterator[Tuple[bytes, int, bytes]]:
+def read_chunks(
+    buffer: BinaryIO,
+    skip_chunks: Set[bytes] = None,
+    list_chunks: Set[bytes] = None,
+    byteorder="little",
+) -> Iterator[Tuple[bytes, int, bytes]]:
     """
     Reads a valid RIFF file, reading all the chunks in the file...
 
@@ -28,7 +33,7 @@ def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes] = None, list_chunks: S
 
     while True:
         next_id = buffer.read(4)
-        if next_id == b'':
+        if next_id == b"":
             return
         if next_id in skip_chunks:
             continue
@@ -37,7 +42,9 @@ def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes] = None, list_chunks: S
 
         if next_id in list_chunks:
             # print(f"(entering {next_id} chunk) -> [")
-            yield from read_chunks(BytesIO(buffer.read(size)), skip_chunks, list_chunks, byteorder)
+            yield from read_chunks(
+                BytesIO(buffer.read(size)), skip_chunks, list_chunks, byteorder
+            )
             # print(f"](exiting {next_id} chunk)")
             continue
 
@@ -45,7 +52,9 @@ def read_chunks(buffer: BinaryIO, skip_chunks: Set[bytes] = None, list_chunks: S
         yield next_id, size, buffer.read(size)
 
 
-def write_chunk(buffer: BinaryIO, chunk_id: bytes, chunk_data: bytes, byteorder="little"):
+def write_chunk(
+    buffer: BinaryIO, chunk_id: bytes, chunk_data: bytes, byteorder="little"
+):
     """
     Writes a chunk to file.
 
@@ -78,7 +87,7 @@ def _header_chunk(header: None, data: bytes, data_out: Dict[str, Any]):
         "num_planes": 1,
         "display_rate": to_int(data[24:28]),
         "contains_seq": bool((to_int(data[28:32]) >> 1) & 1),
-        "is_in_ico": bool(to_int(data[28:32]) & 1)
+        "is_in_ico": bool(to_int(data[28:32]) & 1),
     }
 
     data_out["header"] = h_data
@@ -119,9 +128,11 @@ def _seq_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
         raise SyntaxError("seq chunk came before header!")
 
     if (len(data) // 4) != header["num_steps"]:
-        raise SyntaxError("Length of sequence chunk does not match the number of steps!")
+        raise SyntaxError(
+            "Length of sequence chunk does not match the number of steps!"
+        )
 
-    data_out["seq"] = [to_int(data[i:i + 4]) for i in range(0, len(data), 4)]
+    data_out["seq"] = [to_int(data[i : i + 4]) for i in range(0, len(data), 4)]
 
 
 def _rate_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
@@ -134,7 +145,7 @@ def _rate_chunk(header: Dict[str, Any], data: bytes, data_out: Dict[str, Any]):
     if (len(data) // 4) != header["num_steps"]:
         raise SyntaxError("Length of rate chunk does not match the number of steps!")
 
-    data_out["rate"] = [to_int(data[i:i + 4]) for i in range(0, len(data), 4)]
+    data_out["rate"] = [to_int(data[i : i + 4]) for i in range(0, len(data), 4)]
 
 
 class AniFormat(AnimatedCursorStorageFormat):
@@ -154,7 +165,7 @@ class AniFormat(AnimatedCursorStorageFormat):
         b"anih": _header_chunk,
         b"icon": _icon_chunk,
         b"rate": _rate_chunk,
-        b"seq ": _seq_chunk
+        b"seq ": _seq_chunk,
     }
 
     @classmethod
@@ -165,7 +176,9 @@ class AniFormat(AnimatedCursorStorageFormat):
         :param first_bytes: The first 12 bytes of the file being tested.
         :return: True if a valid windows .ani file, otherwise False.
         """
-        return (first_bytes[:4] == cls.RIFF_MAGIC) and (first_bytes[8:12] == cls.ACON_MAGIC)
+        return (first_bytes[:4] == cls.RIFF_MAGIC) and (
+            first_bytes[8:12] == cls.ACON_MAGIC
+        )
 
     @classmethod
     def read(cls, cur_file: BinaryIO) -> AnimatedCursor:
@@ -182,7 +195,9 @@ class AniFormat(AnimatedCursorStorageFormat):
 
         ani_data: Dict[str, Any] = {"header": None}
 
-        for chunk_id, chunk_len, chunk_data in read_chunks(cur_file, {b"fram"}, {b"LIST"}):
+        for chunk_id, chunk_len, chunk_data in read_chunks(
+            cur_file, {b"fram"}, {b"LIST"}
+        ):
             if chunk_id in cls.CHUNKS:
                 cls.CHUNKS[chunk_id](ani_data["header"], chunk_data, ani_data)
 
@@ -218,7 +233,9 @@ class AniFormat(AnimatedCursorStorageFormat):
         # The number of planes should always be 1....
         header[24:28] = to_bytes(1, 4)
         header[28:32] = to_bytes(10, 4)  # We just pass 10 as the default delay...
-        header[32:36] = to_bytes(1, 4)  # The flags, last flag is flipped which specifies data is stored in .cur
+        header[32:36] = to_bytes(
+            1, 4
+        )  # The flags, last flag is flipped which specifies data is stored in .cur
 
         write_chunk(out, b"anih", header)
 

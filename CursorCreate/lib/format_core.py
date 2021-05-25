@@ -36,7 +36,7 @@ def to_signed_int(b, byteorder="little"):
     :return: A signed integer, represented by the bytes...
     """
     new_int = to_int(b, byteorder)
-    power = (2 ** (len(b) * 8))
+    power = 2 ** (len(b) * 8)
     signed_limit = (power // 2) - 1
     print(new_int, power, signed_limit)
 

@@ -15,9 +15,10 @@ class XCursorFormat(AnimatedCursorStorageFormat):
     width, height, x hotspot, y hotspot, and the delay, followed by BGRA image data. Note all attributes in this format
     are stored as 4 byte or 32 bit little endian unsigned integers except image data described above.
     """
+
     MAGIC = b"Xcur"
     VERSION = 65536
-    CURSOR_TYPE = 0xfffd0002
+    CURSOR_TYPE = 0xFFFD0002
     HEADER_SIZE = 16
     IMG_CHUNK_H_SIZE = 36
     # The downscaling factor of the nominal size...
@@ -35,7 +36,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
 
     @classmethod
     def _assert(cls, boolean, msg="Something is wrong!!!"):
-        """ Private, used for throwing exceptions when assertions don't hold while reading the format. """
+        """Private, used for throwing exceptions when assertions don't hold while reading the format."""
         if not boolean:
             raise SyntaxError(msg)
 
@@ -52,7 +53,9 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         cls._assert(cls.check(magic_data), "Not a XCursor File!!!")
 
         header_size = to_int(cur_file.read(4))
-        cls._assert(header_size == cls.HEADER_SIZE, f"Header size is not {cls.HEADER_SIZE}!")
+        cls._assert(
+            header_size == cls.HEADER_SIZE, f"Header size is not {cls.HEADER_SIZE}!"
+        )
         version = to_int(cur_file.read(4))
 
         # Number of cursors...
@@ -82,7 +85,9 @@ class XCursorFormat(AnimatedCursorStorageFormat):
 
             for size, offsets in nominal_sizes.items():
                 if i < len(offsets):
-                    img, x_hot, y_hot, delay = cls._read_chunk(offsets[i], cur_file, size)
+                    img, x_hot, y_hot, delay = cls._read_chunk(
+                        offsets[i], cur_file, size
+                    )
                     cursor.add(CursorIcon(img, x_hot, y_hot))
                     sub_delays.append(delay)
 
@@ -92,24 +97,44 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         return AnimatedCursor(cursors, delays)
 
     @classmethod
-    def _read_chunk(cls, offset: int, buffer: BinaryIO, nominal_size: int) -> Tuple[Image.Image, int, int, int]:
+    def _read_chunk(
+        cls, offset: int, buffer: BinaryIO, nominal_size: int
+    ) -> Tuple[Image.Image, int, int, int]:
         buffer.seek(offset)
         # Begin to check if this is valid...
         chunk_size = to_int(buffer.read(4))
-        cls._assert(chunk_size == cls.IMG_CHUNK_H_SIZE, f"Image chunks must be {cls.IMG_CHUNK_H_SIZE} bytes!")
-        cls._assert(to_int(buffer.read(4)) == cls.CURSOR_TYPE, f"Type does not match type in TOC!")
-        cls._assert(to_int(buffer.read(4)) == nominal_size, f"Nominal sizes in TOC and image header don't match!")
-        cls._assert(to_int(buffer.read(4)) == 1, f"Unsupported version of image header...")
+        cls._assert(
+            chunk_size == cls.IMG_CHUNK_H_SIZE,
+            f"Image chunks must be {cls.IMG_CHUNK_H_SIZE} bytes!",
+        )
+        cls._assert(
+            to_int(buffer.read(4)) == cls.CURSOR_TYPE,
+            f"Type does not match type in TOC!",
+        )
+        cls._assert(
+            to_int(buffer.read(4)) == nominal_size,
+            f"Nominal sizes in TOC and image header don't match!",
+        )
+        cls._assert(
+            to_int(buffer.read(4)) == 1, f"Unsupported version of image header..."
+        )
         # Checks are done, load the rest of the header as we are good from here...
         rest_of_chunk = buffer.read(20)
-        width, height, x_hot, y_hot, delay = [to_int(rest_of_chunk[i:i + 4]) for i in range(0, len(rest_of_chunk), 4)]
+        width, height, x_hot, y_hot, delay = [
+            to_int(rest_of_chunk[i : i + 4]) for i in range(0, len(rest_of_chunk), 4)
+        ]
 
-        cls._assert(width <= 0x7fff, "Invalid width!")
-        cls._assert(height <= 0x7fff, "Invalid height!")
+        cls._assert(width <= 0x7FFF, "Invalid width!")
+        cls._assert(height <= 0x7FFF, "Invalid height!")
 
-        x_hot, y_hot = x_hot if (0 <= x_hot < width) else 0, y_hot if (0 <= y_hot < height) else 0
+        x_hot, y_hot = (
+            x_hot if (0 <= x_hot < width) else 0,
+            y_hot if (0 <= y_hot < height) else 0,
+        )
 
-        img_data = np.frombuffer(buffer.read(width * height * 4), dtype=np.uint8).reshape(width, height, 4)
+        img_data = np.frombuffer(
+            buffer.read(width * height * 4), dtype=np.uint8
+        ).reshape(width, height, 4)
 
         # ARGB packed in little endian format, therefore its actually BGRA when read sequentially....
         image = Image.fromarray(img_data[:, :, (2, 1, 0, 3)], "RGBA")
@@ -138,7 +163,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
 
         out.write(to_bytes(num_curs, 4))
         # The initial offset...
-        offset = (num_curs * 12 + cls.HEADER_SIZE)
+        offset = num_curs * 12 + cls.HEADER_SIZE
 
         sorted_sizes = sorted(cursor[0][0])
 
@@ -165,11 +190,14 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         # The width and height...
         width, height = img.image.size
         x_hot, y_hot = img.hotspot
-        cls._assert(width <= 0x7fff, "Invalid width!")
-        cls._assert(height <= 0x7fff, "Invalid height!")
+        cls._assert(width <= 0x7FFF, "Invalid width!")
+        cls._assert(height <= 0x7FFF, "Invalid height!")
         out_file.write(to_bytes(width, 4))
         out_file.write(to_bytes(width, 4))
-        x_hot, y_hot = x_hot if (0 <= x_hot < width) else 0, y_hot if (0 <= y_hot < height) else 0
+        x_hot, y_hot = (
+            x_hot if (0 <= x_hot < width) else 0,
+            y_hot if (0 <= y_hot < height) else 0,
+        )
 
         # Hotspot and delay...
         out_file.write(to_bytes(x_hot, 4))

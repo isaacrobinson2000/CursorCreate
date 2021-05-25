@@ -47,8 +47,12 @@ class CursorIcon:
     def hotspot(self, value: Tuple[int, int]):
         new_x, new_y = int(value[0]), int(value[1])
 
-        if not ((0 <= new_x < self.image.size[0]) and (0 <= new_y < self.image.size[1])):
-            raise ValueError(f"{(new_x, new_y)} is not a valid hotspot for cursor icon of size {self.image.size}!!!")
+        if not (
+            (0 <= new_x < self.image.size[0]) and (0 <= new_y < self.image.size[1])
+        ):
+            raise ValueError(
+                f"{(new_x, new_y)} is not a valid hotspot for cursor icon of size {self.image.size}!!!"
+            )
 
         self._hotspot = (new_x, new_y)
 
@@ -168,10 +172,16 @@ class Cursor:
                     final_img_w = (max_size[0] / max_size[1]) * final_img_h
                     w_offset = (size[0] - final_img_w) / 2
 
-                new_cur = ImageOps.pad(self[max_size].image, size, Image.LANCZOS).resize(size, Image.LANCZOS)
+                new_cur = ImageOps.pad(
+                    self[max_size].image, size, Image.LANCZOS
+                ).resize(size, Image.LANCZOS)
 
-                new_hx = w_offset + (self[max_size].hotspot[0] / max_size[0]) * final_img_w
-                new_hy = h_offset + (self[max_size].hotspot[1] / max_size[1]) * final_img_h
+                new_hx = (
+                    w_offset + (self[max_size].hotspot[0] / max_size[0]) * final_img_w
+                )
+                new_hy = (
+                    h_offset + (self[max_size].hotspot[1] / max_size[1]) * final_img_h
+                )
                 self.add(CursorIcon(new_cur, int(new_hx), int(new_hy)))
 
     def restrict_to_sizes(self, sizes: Iterable[Tuple[int, int]]):
@@ -211,7 +221,9 @@ class AnimatedCursor(list):
     """
 
     # NOTE: Delay unit is milliseconds...
-    def __init__(self, cursors: Iterable[Cursor] = None, framerates: Iterable[int] = None):
+    def __init__(
+        self, cursors: Iterable[Cursor] = None, framerates: Iterable[int] = None
+    ):
         """
         Create a new animated cursor.
 
@@ -268,4 +280,6 @@ class AnimatedCursor(list):
 
         :return: An AnimatedCursor
         """
-        return AnimatedCursor([cur.copy() for cur, delay in self], [delay for cur, delay in self])
+        return AnimatedCursor(
+            [cur.copy() for cur, delay in self], [delay for cur, delay in self]
+        )

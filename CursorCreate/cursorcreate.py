@@ -32,9 +32,13 @@ def print_help():
     print("Usage:")
     print("No arguments: Launch the GUI")
     print("'--help': Display help")
-    print("'--build FILE1 FILE2 ...': Build cursor projects from the command line \n"
-          "by passing the json files of the projects...")
-    print("'--open FILE': Open the specified cursor project in the GUI by providing the json file...")
+    print(
+        "'--build FILE1 FILE2 ...': Build cursor projects from the command line \n"
+        "by passing the json files of the projects..."
+    )
+    print(
+        "'--open FILE': Open the specified cursor project in the GUI by providing the json file..."
+    )
     # TODO: print("'--convert INPUT_FILE OUTPUT_FILE FORMAT': Convert")
 
 
@@ -73,7 +77,12 @@ def main():
                 config_path = Path(config_file).resolve()
                 metadata, fc_data = theme_util.load_project(config_path)
                 fc_data = {name: cursor for name, (cur_path, cursor) in fc_data.items()}
-                theme_util.build_theme(config_path.parent.name, config_path.parent.parent, metadata, fc_data)
+                theme_util.build_theme(
+                    config_path.parent.name,
+                    config_path.parent.parent,
+                    metadata,
+                    fc_data,
+                )
             except Exception as e:
                 print(e)
                 raise e

@@ -57,8 +57,13 @@ class PreviewArea(QtWidgets.QWidget):
     def __init__(self, parent, cursor: AnimatedCursor):
         super().__init__(parent)
         self._core_painter = QtGui.QPainter()
-        self._pixmaps = [QtGui.QPixmap(ImageQt.ImageQt(sub_cur[self.CURSOR_SIZE].image)) for sub_cur, delay in cursor]
-        self._hotspots = [sub_cur[self.CURSOR_SIZE].hotspot for sub_cur, delay in cursor]
+        self._pixmaps = [
+            QtGui.QPixmap(ImageQt.ImageQt(sub_cur[self.CURSOR_SIZE].image))
+            for sub_cur, delay in cursor
+        ]
+        self._hotspots = [
+            sub_cur[self.CURSOR_SIZE].hotspot for sub_cur, delay in cursor
+        ]
         self._delays = [delay for sub_cur, delay in cursor]
 
         self._animation_timer = QtCore.QTimer()
@@ -67,7 +72,9 @@ class PreviewArea(QtWidgets.QWidget):
         self._current_frame = -1
 
         self._main_layout = QtWidgets.QVBoxLayout()
-        self._example_label = QtWidgets.QLabel("Hover over me to see the cursor! Click to see the hotspot.")
+        self._example_label = QtWidgets.QLabel(
+            "Hover over me to see the cursor! Click to see the hotspot."
+        )
         self._main_layout.addWidget(self._example_label)
         self.setLayout(self._main_layout)
 
@@ -79,7 +86,12 @@ class PreviewArea(QtWidgets.QWidget):
     def moveStep(self):
         self._current_frame = (self._current_frame + 1) % len(self._delays)
         if len(self._pixmaps) > 0:
-            self.setCursor(QtGui.QCursor(self._pixmaps[self._current_frame], *self._hotspots[self._current_frame]))
+            self.setCursor(
+                QtGui.QCursor(
+                    self._pixmaps[self._current_frame],
+                    *self._hotspots[self._current_frame],
+                )
+            )
         if len(self._pixmaps) > 1:
             self._animation_timer.setInterval(self._delays[self._current_frame])
             self._animation_timer.start()
@@ -93,7 +105,9 @@ class PreviewArea(QtWidgets.QWidget):
             widths = [20, 8, 3]
             for color, width in zip(colors, widths):
                 self._core_painter.setBrush(QtGui.QBrush(QtGui.QColor(*color)))
-                self._core_painter.drawEllipse(QtCore.QPoint(*self._hotspot_preview_loc), width, width)
+                self._core_painter.drawEllipse(
+                    QtCore.QPoint(*self._hotspot_preview_loc), width, width
+                )
 
         self._core_painter.end()
 

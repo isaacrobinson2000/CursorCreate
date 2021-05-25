@@ -7,7 +7,9 @@ from CursorCreate.lib.cursor import AnimatedCursor
 class CursorDisplayWidget(QtWidgets.QWidget):
     DEF_SIZE = 64
 
-    def __init__(self, parent=None, cursor: AnimatedCursor = None, size=None, *args, **kwargs):
+    def __init__(
+        self, parent=None, cursor: AnimatedCursor = None, size=None, *args, **kwargs
+    ):
         super().__init__(parent, *args, **kwargs)
 
         self._cur = None
@@ -56,20 +58,32 @@ class CursorDisplayWidget(QtWidgets.QWidget):
 
         if cursor is not None and (len(cursor) > 0):
             self._cur.normalize([(self._size, self._size)])
-            self._imgs = [QtGui.QPixmap(ImageQt(cur[(self._size, self._size)].image)) for cur, delay in cursor]
+            self._imgs = [
+                QtGui.QPixmap(ImageQt(cur[(self._size, self._size)].image))
+                for cur, delay in cursor
+            ]
             self._delays = [delay for cur, delay in cursor]
 
             if len(cursor) > 1:
                 self._is_ani = True
         else:
-            self._imgs = [QtGui.QPixmap(QtGui.QImage(bytes(4 * self._size ** 2), self._size, self._size, 4,
-                                                     QtGui.QImage.Format_ARGB32))]
+            self._imgs = [
+                QtGui.QPixmap(
+                    QtGui.QImage(
+                        bytes(4 * self._size ** 2),
+                        self._size,
+                        self._size,
+                        4,
+                        QtGui.QImage.Format_ARGB32,
+                    )
+                )
+            ]
             self._delays = [0]
 
         self.move_step()
 
     def stop_and_destroy(self):
-        """ Forcefully destroys the cursor viewers animation timer by stopping it and deleting it. """
+        """Forcefully destroys the cursor viewers animation timer by stopping it and deleting it."""
         if (self.__animation_timer is not None) and (self.__animation_timer.isActive()):
             self.__animation_timer.stop()
 

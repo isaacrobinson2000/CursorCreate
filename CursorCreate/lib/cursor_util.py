@@ -36,17 +36,24 @@ def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
     if hasattr(image, "is_animated") and (image.is_animated):
         # If this is an animated file, load in each frame as the frames of the cursor (Ex, ".gif")
         min_dim = min(image.size)  # We fit the image to a square...
-        images_durations = [(ImageOps.fit(image, (min_dim, min_dim)), frame.info.get("duration", 100))
-                            for frame in ImageSequence.Iterator(image)]
+        images_durations = [
+            (ImageOps.fit(image, (min_dim, min_dim)), frame.info.get("duration", 100))
+            for frame in ImageSequence.Iterator(image)
+        ]
     else:
         # Separate all frames (Assumed to be stored horizontally)
         height = image.size[1]
         num_frames = image.size[0] // height
 
         if num_frames == 0:
-            raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
+            raise ValueError(
+                "Image width is smaller then height so this will load as a 0 frame cursor!!!"
+            )
 
-        images_durations = [(image.crop((i * height, 0, i * height + height, height)), 100) for i in range(num_frames)]
+        images_durations = [
+            (image.crop((i * height, 0, i * height + height, height)), 100)
+            for i in range(num_frames)
+        ]
 
     # Now convert images into the cursors, resizing them to match all the default sizes...
     final_cursor = AnimatedCursor()
@@ -83,7 +90,9 @@ def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
     num_frames = int(h_to_w_multiplier)
 
     if num_frames == 0:
-        raise ValueError("Image width is smaller then height so this will load as a 0 frame cursor!!!")
+        raise ValueError(
+            "Image width is smaller then height so this will load as a 0 frame cursor!!!"
+        )
 
     # Build empty animated cursor to start stashing frames in...
     ani_cur = AnimatedCursor([Cursor() for __ in range(num_frames)], [100] * num_frames)
@@ -91,14 +100,22 @@ def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
     for sizes in DEFAULT_SIZES:
         # For each default size, resize svg to it and add all frames to the AnimatedCursor object...
         image = BytesIO()
-        cairosvg.svg2png(file_obj=file, write_to=image, output_height=sizes[1],
-                         output_width=int(sizes[1] * h_to_w_multiplier))
+        cairosvg.svg2png(
+            file_obj=file,
+            write_to=image,
+            output_height=sizes[1],
+            output_width=int(sizes[1] * h_to_w_multiplier),
+        )
         file.seek(0)
         image = Image.open(image)
 
         height = image.size[1]
         for i in range(num_frames):
-            ani_cur[i][0].add(CursorIcon(image.crop((i * height, 0, i * height + height, height)), 0, 0))
+            ani_cur[i][0].add(
+                CursorIcon(
+                    image.crop((i * height, 0, i * height + height, height)), 0, 0
+                )
+            )
 
     return ani_cur
 

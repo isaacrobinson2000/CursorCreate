@@ -65,7 +65,9 @@ class FlowLayout(QtWidgets.QLayout):
         for item in self.itemList:
             size = size.expandedTo(item.minimumSize())
 
-        size += QtCore.QSize(2 * self.contentsMargins().top(), 2 * self.contentsMargins().top())
+        size += QtCore.QSize(
+            2 * self.contentsMargins().top(), 2 * self.contentsMargins().top()
+        )
         return size
 
     def do_layout(self, rect, test_only):
@@ -75,8 +77,16 @@ class FlowLayout(QtWidgets.QLayout):
 
         for item in self.itemList:
             wid = item.widget()
-            space_x = self.spacing() + wid.style().layoutSpacing(QtWidgets.QSizePolicy.PushButton, QtWidgets.QSizePolicy.PushButton, QtCore.Qt.Horizontal)
-            space_y = self.spacing() + wid.style().layoutSpacing(QtWidgets.QSizePolicy.PushButton, QtWidgets.QSizePolicy.PushButton, QtCore.Qt.Vertical)
+            space_x = self.spacing() + wid.style().layoutSpacing(
+                QtWidgets.QSizePolicy.PushButton,
+                QtWidgets.QSizePolicy.PushButton,
+                QtCore.Qt.Horizontal,
+            )
+            space_y = self.spacing() + wid.style().layoutSpacing(
+                QtWidgets.QSizePolicy.PushButton,
+                QtWidgets.QSizePolicy.PushButton,
+                QtCore.Qt.Vertical,
+            )
             next_x = x + item.sizeHint().width() + space_x
             if next_x - space_x > rect.right() and line_height > 0:
                 x = rect.x()

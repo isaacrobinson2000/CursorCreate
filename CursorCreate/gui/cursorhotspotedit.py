@@ -14,17 +14,18 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
     userHotspotChange = QtCore.Signal((int, int))
 
-    def __init__(self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs):
+    def __init__(
+        self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs
+    ):
         super().__init__(parent, *args, **kwargs)
         self._frame = 0
         self._frame_img = None
         self._pressed = False
 
         if (cursor is None) or (len(cursor) == 0):
-            self._cursor = AnimatedCursor(
-                [Cursor([CursorIcon(Image.fromarray(np.zeros(self.VIEW_SIZE + (4,), dtype=np.uint8)), 0, 0)])],
-                [100]
-            )
+            tmp_img = Image.fromarray(np.zeros(self.VIEW_SIZE + (4,), dtype=np.uint8))
+            tmp_cursor = Cursor([CursorIcon(tmp_img, 0, 0)])
+            self._cursor = AnimatedCursor([tmp_cursor], [100])
         else:
             self._cursor = cursor
             self._cursor.normalize([self.VIEW_SIZE])
@@ -82,10 +83,14 @@ class CursorHotspotWidget(QtWidgets.QWidget):
     def frame(self, value: int):
         if 0 <= value < len(self._cursor):
             self._frame = value
-            self._frame_img = QtGui.QPixmap(ImageQt.ImageQt(self._cursor[self._frame][0][self.VIEW_SIZE].image))
+            self._frame_img = QtGui.QPixmap(
+                ImageQt.ImageQt(self._cursor[self._frame][0][self.VIEW_SIZE].image)
+            )
             self.update()
         else:
-            raise ValueError(f"The frame must land within length of the animated cursor!")
+            raise ValueError(
+                f"The frame must land within length of the animated cursor!"
+            )
 
     @property
     def hotspot(self) -> Tuple[int, int]:
@@ -96,7 +101,9 @@ class CursorHotspotWidget(QtWidgets.QWidget):
         if not (isinstance(value, Tuple) and len(value) == 2):
             raise ValueError("Not a coordinate pair!")
 
-        value = min(max(0, value[0]), self.VIEW_SIZE[0] - 1), min(max(0, value[1]), self.VIEW_SIZE[1] - 1)
+        value = min(max(0, value[0]), self.VIEW_SIZE[0] - 1), min(
+            max(0, value[1]), self.VIEW_SIZE[1] - 1
+        )
 
         for size in self._cursor[self._frame][0]:
             x_rat, y_rat = size[0] / self.VIEW_SIZE[0], size[1] / self.VIEW_SIZE[1]
@@ -115,7 +122,9 @@ class CursorEditWidget(QtWidgets.QFrame):
     userDelayChange = QtCore.Signal((int,))
     userHotspotChange = QtCore.Signal((int, int))
 
-    def __init__(self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs):
+    def __init__(
+        self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs
+    ):
         super().__init__(parent, *args, **kwargs)
 
         self._main_layout = QtWidgets.QVBoxLayout(self)
@@ -130,7 +139,9 @@ class CursorEditWidget(QtWidgets.QFrame):
         self._f_lay.addWidget(self._hotspot_picker)
         self._frame.setLayout(self._f_lay)
         self._frame.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        self._frame.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self._frame.setSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
 
         self._main_layout.addWidget(self._frame)
         self._main_layout.setAlignment(self._frame, QtCore.Qt.AlignHCenter)
@@ -140,7 +151,9 @@ class CursorEditWidget(QtWidgets.QFrame):
         self.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
 
         # Copy properties from the hotspot picking widget...
-        self._hotspot_picker.userHotspotChange.connect(lambda x, y: self.userHotspotChange.emit(x, y))
+        self._hotspot_picker.userHotspotChange.connect(
+            lambda x, y: self.userHotspotChange.emit(x, y)
+        )
 
         # Update the delay value...
         self.delay = self.delay
@@ -208,7 +221,9 @@ class HotspotEditDialog(QtWidgets.QDialog):
             self._hotspot_picker_lst = [CursorEditWidget()]
             self._cursor = self._hotspot_picker_lst[0].current_cursor
         else:
-            self._hotspot_picker_lst = [CursorEditWidget(None, cursor, i) for i in range(len(cursor))]
+            self._hotspot_picker_lst = [
+                CursorEditWidget(None, cursor, i) for i in range(len(cursor))
+            ]
             self._cursor = cursor
 
         for i, cur_picker in enumerate(self._hotspot_picker_lst):

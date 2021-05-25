@@ -1,4 +1,5 @@
 import plistlib
+
 # For building archives dynamically in-place...
 import tarfile
 import zipfile
@@ -21,6 +22,7 @@ class CursorThemeBuilder(ABC):
     Abstract class for representing theme builders for different platforms. Also includes a list of cursors which
     a cursor theme can provide, in a class variable call DEFAULT_CURSORS.
     """
+
     # List of cursors need to be supported for full theme support on all platforms...(Most for linux)
     DEFAULT_CURSORS = {
         "alias",
@@ -69,14 +71,20 @@ class CursorThemeBuilder(ABC):
         "wayland-cursor",
         "x-cursor",
         "zoom-in",
-        "zoom-out"
+        "zoom-out",
     }
 
     __ERROR_MSG = "Subclass doesn't implement this method!!!"
 
     @classmethod
     @abstractmethod
-    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(
+        cls,
+        theme_name: str,
+        metadata: Dict[str, Any],
+        cursor_dict: Dict[str, AnimatedCursor],
+        directory: Path,
+    ):
         """
         Build the passed cursor theme for this platform...
 
@@ -187,7 +195,7 @@ class LinuxThemeBuilder(CursorThemeBuilder):
         "v_double_arrow": "size_ver",
         "left_ptr_help": "help",
         "size_all": "fleur",
-        "6407b0e94181790501fd1e167b474872": "copy"
+        "6407b0e94181790501fd1e167b474872": "copy",
     }
     # The file name which gives the preview in system settings...
     PREVIEW_FILE = "thumbnail.png"
@@ -199,7 +207,13 @@ class LinuxThemeBuilder(CursorThemeBuilder):
     LEGAL_EXPORT_SIZES = {(32, 32), (48, 48), (64, 64), (128, 128)}
 
     @classmethod
-    def _tarinfo(cls, name: ArchivePath, tar_type: bytes, data: Union[StringIO, BytesIO] = None, **other_args) -> tarfile.TarInfo:
+    def _tarinfo(
+        cls,
+        name: ArchivePath,
+        tar_type: bytes,
+        data: Union[StringIO, BytesIO] = None,
+        **other_args,
+    ) -> tarfile.TarInfo:
         new_tarinfo = tarfile.TarInfo(str(name))
 
         if tar_type == tarfile.DIRTYPE:
@@ -217,7 +231,13 @@ class LinuxThemeBuilder(CursorThemeBuilder):
         return new_tarinfo
 
     @classmethod
-    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(
+        cls,
+        theme_name: str,
+        metadata: Dict[str, Any],
+        cursor_dict: Dict[str, AnimatedCursor],
+        directory: Path,
+    ):
         with tarfile.open(str(directory / (theme_name + ".tar.gz")), "w|gz") as tar:
             # Write the theme directory...
             theme_dir = ArchivePath(theme_name)
@@ -227,19 +247,29 @@ class LinuxThemeBuilder(CursorThemeBuilder):
             theme_f = BytesIO()
             author = metadata.get("author", None)
             if author is not None:
-                theme_f.write(f"# {theme_name} cursor theme created by {author}.\n".encode())
+                theme_f.write(
+                    f"# {theme_name} cursor theme created by {author}.\n".encode()
+                )
             theme_f.write(f"[Icon Theme]\nName={theme_name}\n".encode())
             theme_f.seek(0)
 
-            tar.addfile(cls._tarinfo(theme_dir / cls.THEME_FILE_NAME, tarfile.REGTYPE, theme_f), theme_f)
+            tar.addfile(
+                cls._tarinfo(theme_dir / cls.THEME_FILE_NAME, tarfile.REGTYPE, theme_f),
+                theme_f,
+            )
 
             # If the license actually exists, write it to a file...
             licence_text = metadata.get("licence", None)
             if licence_text is not None:
                 license_file = BytesIO(licence_text.encode())
-                tar.addfile(cls._tarinfo(theme_dir / cls.LICENCE_FILE_NAME, tarfile.REGTYPE, license_file), license_file)
+                tar.addfile(
+                    cls._tarinfo(
+                        theme_dir / cls.LICENCE_FILE_NAME, tarfile.REGTYPE, license_file
+                    ),
+                    license_file,
+                )
 
-            cursor_dir = (theme_dir / "cursors")
+            cursor_dir = theme_dir / "cursors"
             tar.addfile(cls._tarinfo(cursor_dir, tarfile.DIRTYPE))
 
             # Write all of the cursors...
@@ -250,7 +280,9 @@ class LinuxThemeBuilder(CursorThemeBuilder):
                 cur_out = BytesIO()
                 XCursorFormat.write(cursor, cur_out)
                 cur_out.seek(0)
-                tar.addfile(cls._tarinfo(cursor_dir / name, tarfile.REGTYPE, cur_out), cur_out)
+                tar.addfile(
+                    cls._tarinfo(cursor_dir / name, tarfile.REGTYPE, cur_out), cur_out
+                )
 
             # If default is in the cursor dictionary, create a preview file for this theme...
             if "default" in cursor_dict:
@@ -258,12 +290,21 @@ class LinuxThemeBuilder(CursorThemeBuilder):
                 preview_out = BytesIO()
                 d_cur[0][0][d_cur[0][0].max_size()].image.save(preview_out, "png")
                 preview_out.seek(0)
-                tar.addfile(cls._tarinfo(cursor_dir / cls.PREVIEW_FILE, tarfile.REGTYPE, preview_out), preview_out)
+                tar.addfile(
+                    cls._tarinfo(
+                        cursor_dir / cls.PREVIEW_FILE, tarfile.REGTYPE, preview_out
+                    ),
+                    preview_out,
+                )
 
             # Create all required symlinks for linux theme to work fully....
             for link, link_to in cls.SYM_LINKS_TO_CUR.items():
                 if link_to in cursor_dict:
-                    tar.addfile(cls._tarinfo(cursor_dir / link, tarfile.SYMTYPE, linkname=link_to))
+                    tar.addfile(
+                        cls._tarinfo(
+                            cursor_dir / link, tarfile.SYMTYPE, linkname=link_to
+                        )
+                    )
 
     @classmethod
     def get_name(cls):
@@ -310,6 +351,7 @@ class WindowsThemeBuilder(CursorThemeBuilder):
     will automatically move the cursors into the right system paths and add them to Registry as a cursor theme
     the user can set in the control panel.
     """
+
     # Converts cursor names specified in DEFAULT_CURSORS to the cursors for windows...
     LINUX_TO_WIN_CURSOR = {
         "default": ("pointer", "normal-select"),
@@ -326,13 +368,26 @@ class WindowsThemeBuilder(CursorThemeBuilder):
         "pointer": ("link", "link-select"),
         "crosshair": ("cross", "precision-select"),
         "pencil": ("hand", "handwriting"),
-        "up-arrow": ("alternate", "alt-select")
+        "up-arrow": ("alternate", "alt-select"),
     }
 
     # Order of cursor pseudo-names in the registry...
     REGISTRY_ORDER = [
-        "pointer", "help", "work", "busy", "cross", "text", "hand", "unavailable",
-        "vert", "horz", "dgn1", "dgn2", "move", "alternate", "link"
+        "pointer",
+        "help",
+        "work",
+        "busy",
+        "cross",
+        "text",
+        "hand",
+        "unavailable",
+        "vert",
+        "horz",
+        "dgn1",
+        "dgn2",
+        "move",
+        "alternate",
+        "link",
     ]
 
     # Legal export sizes...
@@ -342,16 +397,28 @@ class WindowsThemeBuilder(CursorThemeBuilder):
     LICENCE_FILE_NAME = "LICENSE.txt"
 
     @classmethod
-    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(
+        cls,
+        theme_name: str,
+        metadata: Dict[str, Any],
+        cursor_dict: Dict[str, AnimatedCursor],
+        directory: Path,
+    ):
         with zipfile.ZipFile(str(directory / (theme_name + ".zip")), "w") as zip_f:
             theme_dir = ArchivePath(theme_name)
 
-            win_cursors = {name: cursor for name, cursor in cursor_dict.items() if (name in cls.LINUX_TO_WIN_CURSOR)}
+            win_cursors = {
+                name: cursor
+                for name, cursor in cursor_dict.items()
+                if (name in cls.LINUX_TO_WIN_CURSOR)
+            }
             reg_used = {cls.LINUX_TO_WIN_CURSOR[name][0] for name in win_cursors}
 
             reg_list = []
             for name in cls.REGISTRY_ORDER:
-                reg_list.append(f"%10%\%CUR_DIR%\%{name}%" if (name in reg_used) else "")
+                reg_list.append(
+                    f"%10%\%CUR_DIR%\%{name}%" if (name in reg_used) else ""
+                )
             reg_list = ",".join(reg_list)
 
             cursor_names = {}
@@ -375,8 +442,12 @@ class WindowsThemeBuilder(CursorThemeBuilder):
 
                 cursor_names[reg_name] = file_name
 
-            cursor_list = "\n".join([f"\"{file_name}\"" for file_name in cursor_names.values()])
-            cursor_reg_list = "\n".join([f"{name} = \"{file_name}\"" for name, file_name in cursor_names.items()])
+            cursor_list = "\n".join(
+                [f'"{file_name}"' for file_name in cursor_names.values()]
+            )
+            cursor_reg_list = "\n".join(
+                [f'{name} = "{file_name}"' for name, file_name in cursor_names.items()]
+            )
 
             licence_text = metadata.get("licence")
             if licence_text is not None:
@@ -388,8 +459,14 @@ class WindowsThemeBuilder(CursorThemeBuilder):
             author = metadata.get("author", None)
             author = "" if (author is None) else f" by {author}"
 
-            inf_file = WINDOWS_INF_FILE.format(name=theme_name, author=author, reg_list=reg_list, cursor_list=cursor_list,
-                                               licence_txt=licence_info, cursor_reg_list=cursor_reg_list)
+            inf_file = WINDOWS_INF_FILE.format(
+                name=theme_name,
+                author=author,
+                reg_list=reg_list,
+                cursor_list=cursor_list,
+                licence_txt=licence_info,
+                cursor_reg_list=cursor_reg_list,
+            )
 
             zip_f.writestr(str(theme_dir / "install.inf"), inf_file)
 
@@ -412,7 +489,11 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
 
     # Converts cursor names to correct mac cursors
     LINUX_TO_MAC_CUR = {
-        "default": ("com.apple.coregraphics.Arrow", "com.apple.coregraphics.ArrowCtx", "com.apple.coregraphics.Move"),
+        "default": (
+            "com.apple.coregraphics.Arrow",
+            "com.apple.coregraphics.ArrowCtx",
+            "com.apple.coregraphics.Move",
+        ),
         "alias": ("com.apple.coregraphics.Alias", "com.apple.cursor.2"),
         "wait": ("com.apple.coregraphics.Wait",),
         "text": ("com.apple.coregraphics.IBeam", "com.apple.coregraphics.IBeamXOR"),
@@ -444,7 +525,7 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
         "help": ("com.apple.cursor.40",),
         "cell": ("com.apple.cursor.41", "com.apple.cursor.20"),
         "zoom-in": ("com.apple.cursor.42",),
-        "zoom-out": ("com.apple.cursor.43",)
+        "zoom-out": ("com.apple.cursor.43",),
     }
 
     CURSOR_EXPORT_SIZES = [(32, 32), (64, 64), (160, 160)]
@@ -452,7 +533,9 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
     Vec2D = Tuple[int, int]
 
     @classmethod
-    def __unify_frames(cls, cur: AnimatedCursor) -> Tuple[int, float, Vec2D, Vec2D, List[Image.Image]]:
+    def __unify_frames(
+        cls, cur: AnimatedCursor
+    ) -> Tuple[int, float, Vec2D, Vec2D, List[Image.Image]]:
         """
         Private method, takes a cursor and converts it into a vertically tiled image with a single delay and single
         hotspot. Uses some hacky shenanigans to do this. :)......
@@ -476,29 +559,50 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
         num_frames = cumulative_delay[-1] // unified_delay
 
         cur.restrict_to_sizes(cls.CURSOR_EXPORT_SIZES)
-        new_images = [Image.new("RGBA", (size[0] * 2, (size[1] * 2) * num_frames), (0, 0, 0, 0)) for size in
-                      cls.CURSOR_EXPORT_SIZES]
+        new_images = [
+            Image.new("RGBA", (size[0] * 2, (size[1] * 2) * num_frames), (0, 0, 0, 0))
+            for size in cls.CURSOR_EXPORT_SIZES
+        ]
 
         next_ani_frame = 1
         for current_out_frame in range(num_frames):
             time_in = current_out_frame * unified_delay
-            while (next_ani_frame < len(cumulative_delay)) and (time_in >= cumulative_delay[next_ani_frame]):
+            while (next_ani_frame < len(cumulative_delay)) and (
+                time_in >= cumulative_delay[next_ani_frame]
+            ):
                 next_ani_frame += 1
 
             for i, img in enumerate(new_images):
                 current_size = cls.CURSOR_EXPORT_SIZES[i]
                 current_cur = cur[next_ani_frame - 1][0][current_size]
                 x_off = current_size[0] - current_cur.hotspot[0]
-                y_off = ((current_size[1] * 2) * current_out_frame) + (current_size[1] - current_cur.hotspot[1])
+                y_off = ((current_size[1] * 2) * current_out_frame) + (
+                    current_size[1] - current_cur.hotspot[1]
+                )
                 img.paste(current_cur.image, (x_off, y_off))
 
         final_hotspot = (cls.CURSOR_EXPORT_SIZES[0][0], cls.CURSOR_EXPORT_SIZES[0][1])
-        final_dims = (cls.CURSOR_EXPORT_SIZES[0][0] * 2, cls.CURSOR_EXPORT_SIZES[0][1] * 2)
+        final_dims = (
+            cls.CURSOR_EXPORT_SIZES[0][0] * 2,
+            cls.CURSOR_EXPORT_SIZES[0][1] * 2,
+        )
 
-        return int(num_frames), float(unified_delay) / 1000, final_hotspot, final_dims, new_images
+        return (
+            int(num_frames),
+            float(unified_delay) / 1000,
+            final_hotspot,
+            final_dims,
+            new_images,
+        )
 
     @classmethod
-    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(
+        cls,
+        theme_name: str,
+        metadata: Dict[str, Any],
+        cursor_dict: Dict[str, AnimatedCursor],
+        directory: Path,
+    ):
         author = metadata.get("author", None)
 
         auth_str = "unknown" if (author is None) else "".join(author.lower().split())
@@ -513,7 +617,7 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
             "HiDPI": True,
             "Identifier": ".".join(["com", auth_str, theme_str]),
             "MinimumVersion": 2.0,
-            "Version": 2.0
+            "Version": 2.0,
         }
 
         for name, cur in cursor_dict.items():
@@ -535,12 +639,12 @@ class MacOSMousecapeThemeBuilder(CursorThemeBuilder):
                         "HotSpotY": float(hotspot[1]),
                         "PointsWide": float(size[0]),
                         "PointsHigh": float(size[1]),
-                        "Representations": representations
+                        "Representations": representations,
                     }
 
         licence = metadata.get("licence", None)
 
-        if (licence is not None):
+        if licence is not None:
             with (directory / "LICENSE.txt").open("w") as l:
                 l.write(licence)
 
@@ -612,12 +716,20 @@ class PreviewPictureBuilder(CursorThemeBuilder):
     ]
 
     @classmethod
-    def build_theme(cls, theme_name: str, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor], directory: Path):
+    def build_theme(
+        cls,
+        theme_name: str,
+        metadata: Dict[str, Any],
+        cursor_dict: Dict[str, AnimatedCursor],
+        directory: Path,
+    ):
         cur_center = cls.SIZE_PER_CURSOR
         w_in_curs = int(np.ceil(np.sqrt(len(cursor_dict))))
         cur_w = cls.SIZE_PER_CURSOR * 2
 
-        new_image = Image.new("RGBA", (w_in_curs * cur_w, w_in_curs * cur_w), (0, 0, 0, 0))
+        new_image = Image.new(
+            "RGBA", (w_in_curs * cur_w, w_in_curs * cur_w), (0, 0, 0, 0)
+        )
         drawer = ImageDraw.Draw(new_image)
 
         cursor_order_dict = {name: i for i, name in enumerate(cls.CURSOR_ORDER)}
@@ -627,16 +739,24 @@ class PreviewPictureBuilder(CursorThemeBuilder):
             cur = cursor_dict[name].copy()
             cur.restrict_to_sizes([lookup_s])
 
-            x_center = (((i % w_in_curs) * cur_w) + cur_center)
-            y_center = (((i // w_in_curs) * cur_w) + cur_center)
+            x_center = ((i % w_in_curs) * cur_w) + cur_center
+            y_center = ((i // w_in_curs) * cur_w) + cur_center
             x_img_off = x_center - cur[0][0][lookup_s].hotspot[0]
             y_img_off = y_center - cur[0][0][lookup_s].hotspot[1]
 
             for x_mult, y_mult in zip([0, 0, 1, -1], [1, -1, 0, 0]):
                 x_cross_end = x_center + int(x_mult * cur_center * 0.25)
                 y_cross_end = y_center + int(y_mult * cur_center * 0.25)
-                drawer.line((x_center, y_center, x_cross_end, y_cross_end), fill=(50, 50, 50, 150), width=3)
-                drawer.line((x_center, y_center, x_cross_end, y_cross_end), fill=(205, 205, 205, 150), width=1)
+                drawer.line(
+                    (x_center, y_center, x_cross_end, y_cross_end),
+                    fill=(50, 50, 50, 150),
+                    width=3,
+                )
+                drawer.line(
+                    (x_center, y_center, x_cross_end, y_cross_end),
+                    fill=(205, 205, 205, 150),
+                    width=1,
+                )
 
             cur_img = cur[0][0][lookup_s].image
             new_image.paste(cur_img, (x_img_off, y_img_off), cur_img)

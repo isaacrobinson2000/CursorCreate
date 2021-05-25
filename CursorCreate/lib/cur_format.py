@@ -23,12 +23,24 @@ def _write_bmp(img: Image.Image, out_file: BinaryIO):
     out_file.write(to_signed_bytes(img.size[1] * 2, 4))  # Image Height
     out_file.write(to_bytes(1, 2))  # Number of planes
     out_file.write(to_bytes(32, 2))  # The bits per pixel...
-    out_file.write(to_bytes(0, 4))  # The compression method, we set it to raw or no compression...
-    out_file.write(to_bytes(4 * img.size[0] * (img.size[1] * 2), 4))  # The size of the image data...
-    out_file.write(to_signed_bytes(ppm[0], 4))  # The resolution of the width in pixels per meter...
-    out_file.write(to_signed_bytes(ppm[1], 4))  # The resolution of the height in pixels per meter...
-    out_file.write(to_bytes(0, 4))  # The number of colors in the color table, in this case none...
-    out_file.write(to_bytes(0, 4))  # Number of important colors in the color table, again none...
+    out_file.write(
+        to_bytes(0, 4)
+    )  # The compression method, we set it to raw or no compression...
+    out_file.write(
+        to_bytes(4 * img.size[0] * (img.size[1] * 2), 4)
+    )  # The size of the image data...
+    out_file.write(
+        to_signed_bytes(ppm[0], 4)
+    )  # The resolution of the width in pixels per meter...
+    out_file.write(
+        to_signed_bytes(ppm[1], 4)
+    )  # The resolution of the height in pixels per meter...
+    out_file.write(
+        to_bytes(0, 4)
+    )  # The number of colors in the color table, in this case none...
+    out_file.write(
+        to_bytes(0, 4)
+    )  # Number of important colors in the color table, again none...
 
     img = img.convert("RGBA")
     data = np.array(img)
@@ -36,7 +48,7 @@ def _write_bmp(img: Image.Image, out_file: BinaryIO):
     alpha_channel = data[:, :, 3]
     alpha_channel = np.packbits(alpha_channel == 0, axis=1)[::-1]
     # Create the main image with transparency...
-    bgrx_data: np.ndarray = (data[::-1, :, (2, 1, 0, 3)])
+    bgrx_data: np.ndarray = data[::-1, :, (2, 1, 0, 3)]
     # Dump the main image...
     out_file.write(bgrx_data.tobytes())
 
@@ -80,7 +92,7 @@ class CurFormat(CursorStorageFormat):
         if not cls.check(magic_header):
             raise SyntaxError("Not a Cur Type File!!!")
 
-        is_ico = (magic_header == cls.ICO_MAGIC)
+        is_ico = magic_header == cls.ICO_MAGIC
 
         # Dump the file with the ico header to allow to be read by Pillow Ico reader...
         data = BytesIO()
@@ -112,7 +124,9 @@ class CurFormat(CursorStorageFormat):
     @classmethod
     def _to_png(cls, image: Image.Image, size) -> bytes:
         if image.size != size:
-            raise ValueError("Size of image stored in image and cursor object don't match!!!")
+            raise ValueError(
+                "Size of image stored in image and cursor object don't match!!!"
+            )
         byte_io = BytesIO()
         image.save(byte_io, "png")
         return byte_io.getvalue()
@@ -120,7 +134,9 @@ class CurFormat(CursorStorageFormat):
     @classmethod
     def _to_bmp(cls, image: Image.Image, size) -> bytes:
         if image.size != size:
-            raise ValueError("Size of image stored in image and cursor object don't match!!!")
+            raise ValueError(
+                "Size of image stored in image and cursor object don't match!!!"
+            )
         byte_io = BytesIO()
         _write_bmp(image, byte_io)
         return byte_io.getvalue()
@@ -146,11 +162,17 @@ class CurFormat(CursorStorageFormat):
                 continue
 
             hot_x, hot_y = cursor[size].hotspot
-            hot_x, hot_y = hot_x if (0 <= hot_x < width) else 0, hot_y if (0 <= hot_y < height) else 0
+            hot_x, hot_y = (
+                hot_x if (0 <= hot_x < width) else 0,
+                hot_y if (0 <= hot_y < height) else 0,
+            )
 
             image_data = cls._to_bmp(cursor[size].image, (width, height))
 
-            width, height = width if (width < 256) else 0, height if (height < 256) else 0
+            width, height = (
+                width if (width < 256) else 0,
+                height if (height < 256) else 0,
+            )
 
             out.write(to_bytes(width, 1))  # Width, 1 byte.
             out.write(to_bytes(height, 1))  # Height, 1 byte.

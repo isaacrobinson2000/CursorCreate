@@ -12,7 +12,9 @@ from CursorCreate.lib.cursor_util import load_cursor
 class CursorSelectWidget(QtWidgets.QFrame):
     FILE_DIALOG_TYPES = "Image, Cursor, or SVG (*)"
 
-    def __init__(self, parent=None, label_text="Label", def_cursor=None, *args, **kwargs):
+    def __init__(
+        self, parent=None, label_text="Label", def_cursor=None, *args, **kwargs
+    ):
         super().__init__(parent, *args, **kwargs)
 
         self.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
@@ -31,7 +33,9 @@ class CursorSelectWidget(QtWidgets.QFrame):
         self._f_lay.addWidget(self._viewer)
         self._frame.setLayout(self._f_lay)
         self._frame.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        self._frame.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self._frame.setSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
 
         self._main_layout.addWidget(self._label)
         self._main_layout.addWidget(self._frame)
@@ -46,7 +50,9 @@ class CursorSelectWidget(QtWidgets.QFrame):
         self._file_sel_btn.clicked.connect(self.open_file)
 
     def open_file(self):
-        path, __ = QtWidgets.QFileDialog.getOpenFileName(self, "Select a Cursor", filter=self.FILE_DIALOG_TYPES)
+        path, __ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Select a Cursor", filter=self.FILE_DIALOG_TYPES
+        )
         if path != "":
             with open(path, "rb") as f:
                 try:
@@ -72,7 +78,9 @@ class CursorSelectWidget(QtWidgets.QFrame):
                 if cur_path.isLocalFile():
                     path = cur_path.path(options=QtCore.QUrl.FullyDecoded)
 
-                    if isinstance(pathlib.PurePath(), pathlib.PureWindowsPath) and path.startswith("/"):
+                    if isinstance(
+                        pathlib.PurePath(), pathlib.PureWindowsPath
+                    ) and path.startswith("/"):
                         path = path[1:]
 
                     with open(path, "rb") as f:
