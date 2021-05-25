@@ -1,15 +1,18 @@
+import json
+import shutil
+import traceback
 from pathlib import Path
-from typing import Dict, Tuple, Union, Any
+from typing import Any, Dict, Tuple, Union
+
+from PIL import Image
+
 from CursorCreate.lib import cursor_util
 from CursorCreate.lib.cur_theme import get_theme_builders
 from CursorCreate.lib.cursor import AnimatedCursor
-from PIL import Image
-import shutil
-import json
-import traceback
 
 CURRENT_FORMAT_VERSION = 1
 CURRENT_FORMAT_NAME = "cursor_build_file"
+
 
 def build_theme(theme_name: str, directory: Path, metadata: Dict[str, Any], cursor_dict: Dict[str, AnimatedCursor]):
     """
@@ -70,18 +73,18 @@ def _disable_newlines(json_data: str, num_lines_in: int) -> str:
     last_enter = None
 
     for i, value in enumerate(json_data):
-        if (value in blocks):
+        if value in blocks:
             block_stack.append(blocks[value])
-            if (len(block_stack) >= num_lines_in and json_data[i + 1] == "\n"):
+            if len(block_stack) >= num_lines_in and json_data[i + 1] == "\n":
                 json_data[i + 1] = ""
-        elif ((len(block_stack) > 0) and (block_stack[-1] == value)):
-            if (len(block_stack) >= num_lines_in and last_enter is not None):
+        elif (len(block_stack) > 0) and (block_stack[-1] == value):
+            if len(block_stack) >= num_lines_in and last_enter is not None:
                 json_data[last_enter] = ""
             block_stack.pop()
-        elif ((len(block_stack) >= num_lines_in) and (value == "\n")):
+        elif (len(block_stack) >= num_lines_in) and (value == "\n"):
             json_data[i] = " "
             last_enter = i
-        elif ((len(block_stack) >= num_lines_in) and (value.isspace())):
+        elif (len(block_stack) >= num_lines_in) and (value.isspace()):
             json_data[i] = ""
 
     return "".join(json_data)
@@ -114,9 +117,9 @@ def save_project(theme_name: str, directory: Path, metadata: Dict[str, Any], fil
     for name, (file, cursor) in file_dict.items():
         cursor.normalize([(64, 64)])
 
-        if(file is not None):
+        if file is not None:
             new_file = build_theme_in / (name + file.suffix)
-            if(Path(file) != Path(new_file)):
+            if Path(file) != Path(new_file):
                 shutil.copy(str(file), str(new_file))
         else:
             new_file = build_theme_in / (name + ".png")
@@ -153,7 +156,7 @@ def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Di
 
         file_cur_dict = {}
 
-        if("metadata" in json_build_data):
+        if "metadata" in json_build_data:
             metadata_info = json_build_data["metadata"]
         else:
             metadata_info = {
@@ -161,7 +164,7 @@ def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Di
                 "licence": None,
             }
 
-        if((not is_format) or (not is_version)):
+        if (not is_format) or (not is_version):
             return None
 
         for cursor_info in json_build_data["data"]:
@@ -180,4 +183,4 @@ def load_project(theme_build_file: Path) -> Union[None, Tuple[Dict[str, Any], Di
 
             file_cur_dict[cursor_info["cursor_name"]] = (cursor_path, cursor)
 
-        return (metadata_info, file_cur_dict)
+        return metadata_info, file_cur_dict

@@ -3,7 +3,8 @@ Cursor Package:
 Provides core objects or data types for manipulating cursor data, including images, hotspots, and delays...
 """
 
-from typing import Tuple, Iterable, Iterator, Union
+from typing import Iterable, Iterator, Tuple, Union
+
 from PIL import Image, ImageOps
 
 
@@ -11,6 +12,7 @@ class CursorIcon:
     """
     Represents a single icon within a cursor of a unique size. Contains an image and a hotspot...
     """
+
     def __init__(self, img: Image, hot_x: int, hot_y: int):
         """
         Create a new CursorIcon, which represents a single picture of fixed size stored in a cursor. The image of
@@ -45,8 +47,8 @@ class CursorIcon:
     def hotspot(self, value: Tuple[int, int]):
         new_x, new_y = int(value[0]), int(value[1])
 
-        if(not((0 <= new_x < self.image.size[0]) and (0 <= new_y < self.image.size[1]))):
-            raise ValueError(f"{(new_x, new_y)} is not a valid hotspot for cursor icon of size {(self.image.size)}!!!")
+        if not ((0 <= new_x < self.image.size[0]) and (0 <= new_y < self.image.size[1])):
+            raise ValueError(f"{(new_x, new_y)} is not a valid hotspot for cursor icon of size {self.image.size}!!!")
 
         self._hotspot = (new_x, new_y)
 
@@ -55,6 +57,7 @@ class Cursor:
     """
     Represents a static cursor. Stores image and hotspot data for unique sizes. CursorIcons are accessed by size...
     """
+
     def __init__(self, cursors: Iterable[CursorIcon] = None):
         """
         Construct a new cursor.
@@ -62,7 +65,7 @@ class Cursor:
         :param cursors: Optional, a iterable of CursorIcons of which to initialize this cursor with
         """
         self._curs = {}
-        if(cursors is not None):
+        if cursors is not None:
             self.extend(cursors)
 
     def add(self, cursor: CursorIcon):
@@ -134,7 +137,7 @@ class Cursor:
         """
         Get the size of the largest CursorIcon stored in this cursor. Will return None if this cursor object is empty...
         """
-        if(len(self) == 0):
+        if len(self) == 0:
             return None
         return max(iter(self), key=lambda s: s[0] * s[1])
 
@@ -145,16 +148,16 @@ class Cursor:
         :param sizes: An iterable of tuples of 2 integers, representing width-height pairs to be added as sizes to
                       this cursor.
         """
-        if(len(self) == 0):
+        if len(self) == 0:
             raise ValueError("Cursor is empty!!! Can't add sizes!!!")
 
         max_size = self.max_size()
 
         for size in sizes:
-            if(size not in self):
+            if size not in self:
                 x_ratio, y_ratio = size[0] / max_size[0], size[1] / max_size[1]
 
-                if(x_ratio <= y_ratio):
+                if x_ratio <= y_ratio:
                     final_img_w = size[0]
                     w_offset = 0
                     final_img_h = (max_size[1] / max_size[0]) * final_img_w
@@ -181,7 +184,7 @@ class Cursor:
         self.add_sizes(sizes)
 
         for size in list(self):
-            if(size not in sizes):
+            if size not in sizes:
                 del self[size]
 
     def remove_non_square_sizes(self):
@@ -189,7 +192,7 @@ class Cursor:
         Remove all non-square sized cursors from this cursor object.
         """
         for size in list(self):
-            if(size[0] != size[1]):
+            if size[0] != size[1]:
                 del self[size]
 
     def copy(self) -> "Cursor":
@@ -206,16 +209,17 @@ class AnimatedCursor(list):
     Represents an animated cursor. Is actually a subtype of list, storing its data in the form of a list of tuples,
     each tuple containing the Cursor object at that frame, and then the delay as an integer in milliseconds...
     """
+
     # NOTE: Delay unit is milliseconds...
-    def __init__(self, cursors: Iterable[Cursor]=None, framerates: Iterable[int]=None):
+    def __init__(self, cursors: Iterable[Cursor] = None, framerates: Iterable[int] = None):
         """
         Create a new animated cursor.
 
         :param cursors: A list of cursor object to add as frames, optional.
         :param framerates: A list of integer frame rates in the form of milliseconds, optional also.
         """
-        framerates = framerates if(framerates is not None) else []
-        cursors = cursors if(cursors is not None) else []
+        framerates = framerates if (framerates is not None) else []
+        cursors = cursors if (cursors is not None) else []
 
         super().__init__(self)
         self.extend(zip(cursors, framerates))
@@ -229,7 +233,7 @@ class AnimatedCursor(list):
                            be added to all the cursor frames in this animated cursor...
         :return:
         """
-        if(init_sizes is None):
+        if init_sizes is None:
             init_sizes = []
 
         sizes = set(init_sizes)
@@ -257,7 +261,6 @@ class AnimatedCursor(list):
         for cursor, delay in self:
             cursor.restrict_to_sizes(sizes)
 
-
     def copy(self) -> "AnimatedCursor":
         """
         Creates a shallow copy of this AnimatedCursor which contains shallow copies of the Cursor objects contained
@@ -266,4 +269,3 @@ class AnimatedCursor(list):
         :return: An AnimatedCursor
         """
         return AnimatedCursor([cur.copy() for cur, delay in self], [delay for cur, delay in self])
-

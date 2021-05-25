@@ -3,8 +3,8 @@ from typing import BinaryIO, Tuple
 import numpy as np
 from PIL import Image
 
-from CursorCreate.lib.cursor import AnimatedCursor, CursorIcon, Cursor
-from CursorCreate.lib.format_core import AnimatedCursorStorageFormat, to_int, to_bytes
+from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
+from CursorCreate.lib.format_core import AnimatedCursorStorageFormat, to_bytes, to_int
 
 
 class XCursorFormat(AnimatedCursorStorageFormat):
@@ -36,7 +36,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
     @classmethod
     def _assert(cls, boolean, msg="Something is wrong!!!"):
         """ Private, used for throwing exceptions when assertions don't hold while reading the format. """
-        if(not boolean):
+        if not boolean:
             raise SyntaxError(msg)
 
     @classmethod
@@ -63,11 +63,11 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         for i in range(num_toc):
             main_type = to_int(cur_file.read(4))
 
-            if(main_type == cls.CURSOR_TYPE):
+            if main_type == cls.CURSOR_TYPE:
                 nominal_size = to_int(cur_file.read(4))
                 offset = to_int(cur_file.read(4))
 
-                if(nominal_size not in nominal_sizes):
+                if nominal_size not in nominal_sizes:
                     nominal_sizes[nominal_size] = [offset]
                 else:
                     nominal_sizes[nominal_size].append(offset)
@@ -81,7 +81,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
             sub_delays = []
 
             for size, offsets in nominal_sizes.items():
-                if(i < len(offsets)):
+                if i < len(offsets):
                     img, x_hot, y_hot, delay = cls._read_chunk(offsets[i], cur_file, size)
                     cursor.add(CursorIcon(img, x_hot, y_hot))
                     sub_delays.append(delay)
@@ -90,7 +90,6 @@ class XCursorFormat(AnimatedCursorStorageFormat):
             delays.append(max(sub_delays))
 
         return AnimatedCursor(cursors, delays)
-
 
     @classmethod
     def _read_chunk(cls, offset: int, buffer: BinaryIO, nominal_size: int) -> Tuple[Image.Image, int, int, int]:
@@ -103,20 +102,19 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         cls._assert(to_int(buffer.read(4)) == 1, f"Unsupported version of image header...")
         # Checks are done, load the rest of the header as we are good from here...
         rest_of_chunk = buffer.read(20)
-        width, height, x_hot, y_hot, delay = [to_int(rest_of_chunk[i:i+4]) for i in range(0, len(rest_of_chunk), 4)]
+        width, height, x_hot, y_hot, delay = [to_int(rest_of_chunk[i:i + 4]) for i in range(0, len(rest_of_chunk), 4)]
 
         cls._assert(width <= 0x7fff, "Invalid width!")
         cls._assert(height <= 0x7fff, "Invalid height!")
 
-        x_hot, y_hot = x_hot if(0 <= x_hot < width) else 0, y_hot if(0 <= y_hot < height) else 0
+        x_hot, y_hot = x_hot if (0 <= x_hot < width) else 0, y_hot if (0 <= y_hot < height) else 0
 
         img_data = np.frombuffer(buffer.read(width * height * 4), dtype=np.uint8).reshape(width, height, 4)
 
         # ARGB packed in little endian format, therefore its actually BGRA when read sequentially....
         image = Image.fromarray(img_data[:, :, (2, 1, 0, 3)], "RGBA")
 
-        return (image, x_hot, y_hot, delay)
-
+        return image, x_hot, y_hot, delay
 
     @classmethod
     def write(cls, cursor: AnimatedCursor, out: BinaryIO):
@@ -129,10 +127,10 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         cursor = cursor.copy()
         cursor.normalize()
 
-        if(len(cursor) == 0):
+        if len(cursor) == 0:
             return
 
-        num_curs = sum(len(l) for l, delay in cursor)
+        num_curs = sum(len(length) for length, delay in cursor)
 
         out.write(cls.MAGIC)
         out.write(to_bytes(cls.HEADER_SIZE, 4))
@@ -157,7 +155,6 @@ class XCursorFormat(AnimatedCursorStorageFormat):
             for sub_cur, delay in cursor:
                 cls._write_chunk(out, sub_cur[size], delay)
 
-
     @classmethod
     def _write_chunk(cls, out_file: BinaryIO, img: CursorIcon, delay: int):
         out_file.write(to_bytes(cls.IMG_CHUNK_H_SIZE, 4))
@@ -172,7 +169,7 @@ class XCursorFormat(AnimatedCursorStorageFormat):
         cls._assert(height <= 0x7fff, "Invalid height!")
         out_file.write(to_bytes(width, 4))
         out_file.write(to_bytes(width, 4))
-        x_hot, y_hot = x_hot if(0 <= x_hot < width) else 0, y_hot if(0 <= y_hot < height) else 0
+        x_hot, y_hot = x_hot if (0 <= x_hot < width) else 0, y_hot if (0 <= y_hot < height) else 0
 
         # Hotspot and delay...
         out_file.write(to_bytes(x_hot, 4))

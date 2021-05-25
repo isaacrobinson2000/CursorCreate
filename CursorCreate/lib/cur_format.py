@@ -1,13 +1,16 @@
-from typing import BinaryIO
 from io import BytesIO
-from PIL.IcoImagePlugin import IcoFile
+from typing import BinaryIO
+
+import numpy as np
 from PIL import Image
+from PIL.IcoImagePlugin import IcoFile
+
 from CursorCreate.lib.cursor import Cursor, CursorIcon
 from CursorCreate.lib.format_core import CursorStorageFormat, to_bytes, to_signed_bytes
-import numpy as np
 
 # The default dpi for BMP images written by this encoder...
 DEF_BMP_DPI = (96, 96)
+
 
 def _write_bmp(img: Image.Image, out_file: BinaryIO):
     # Grab the dpi for calculations later...
@@ -15,17 +18,17 @@ def _write_bmp(img: Image.Image, out_file: BinaryIO):
     ppm = tuple(int(dpi_val * 39.3701 + 0.5) for dpi_val in dpi)
 
     # BMP HEADER:
-    out_file.write(to_bytes(40, 4)) # BMP Header size
-    out_file.write(to_signed_bytes(img.size[0], 4)) # Image Width
-    out_file.write(to_signed_bytes(img.size[1] * 2, 4)) # Image Height
-    out_file.write(to_bytes(1, 2)) # Number of planes
-    out_file.write(to_bytes(32, 2)) # The bits per pixel...
-    out_file.write(to_bytes(0, 4)) # The compression method, we set it to raw or no compression...
-    out_file.write(to_bytes(4 * img.size[0] * (img.size[1] * 2), 4)) # The size of the image data...
-    out_file.write(to_signed_bytes(ppm[0], 4)) # The resolution of the width in pixels per meter...
-    out_file.write(to_signed_bytes(ppm[1], 4)) # The resolution of the height in pixels per meter...
-    out_file.write(to_bytes(0, 4)) # The number of colors in the color table, in this case none...
-    out_file.write(to_bytes(0, 4)) # Number of important colors in the color table, again none...
+    out_file.write(to_bytes(40, 4))  # BMP Header size
+    out_file.write(to_signed_bytes(img.size[0], 4))  # Image Width
+    out_file.write(to_signed_bytes(img.size[1] * 2, 4))  # Image Height
+    out_file.write(to_bytes(1, 2))  # Number of planes
+    out_file.write(to_bytes(32, 2))  # The bits per pixel...
+    out_file.write(to_bytes(0, 4))  # The compression method, we set it to raw or no compression...
+    out_file.write(to_bytes(4 * img.size[0] * (img.size[1] * 2), 4))  # The size of the image data...
+    out_file.write(to_signed_bytes(ppm[0], 4))  # The resolution of the width in pixels per meter...
+    out_file.write(to_signed_bytes(ppm[1], 4))  # The resolution of the height in pixels per meter...
+    out_file.write(to_bytes(0, 4))  # The number of colors in the color table, in this case none...
+    out_file.write(to_bytes(0, 4))  # Number of important colors in the color table, again none...
 
     img = img.convert("RGBA")
     data = np.array(img)
@@ -74,7 +77,7 @@ class CurFormat(CursorStorageFormat):
         """
         magic_header = cur_file.read(4)
 
-        if(not cls.check(magic_header)):
+        if not cls.check(magic_header):
             raise SyntaxError("Not a Cur Type File!!!")
 
         is_ico = (magic_header == cls.ICO_MAGIC)
@@ -91,13 +94,13 @@ class CurFormat(CursorStorageFormat):
         for head in ico_img.entry:
             width = head["width"]
             height = head["height"]
-            x_hot = 0 if(is_ico) else head["planes"]
-            y_hot = 0 if(is_ico) else head["bpp"]
+            x_hot = 0 if is_ico else head["planes"]
+            y_hot = 0 if is_ico else head["bpp"]
 
             # Check that hotspots are valid...
-            if(not (0 <= x_hot < width)):
+            if not (0 <= x_hot < width):
                 x_hot = 0
-            if(not (0 <= y_hot < height)):
+            if not (0 <= y_hot < height):
                 y_hot = 0
 
             image = ico_img.getimage((width, height))
@@ -106,10 +109,9 @@ class CurFormat(CursorStorageFormat):
 
         return cursor
 
-
     @classmethod
     def _to_png(cls, image: Image.Image, size) -> bytes:
-        if(image.size != size):
+        if image.size != size:
             raise ValueError("Size of image stored in image and cursor object don't match!!!")
         byte_io = BytesIO()
         image.save(byte_io, "png")
@@ -117,7 +119,7 @@ class CurFormat(CursorStorageFormat):
 
     @classmethod
     def _to_bmp(cls, image: Image.Image, size) -> bytes:
-        if (image.size != size):
+        if image.size != size:
             raise ValueError("Size of image stored in image and cursor object don't match!!!")
         byte_io = BytesIO()
         _write_bmp(image, byte_io)
@@ -140,18 +142,18 @@ class CurFormat(CursorStorageFormat):
         for size in sorted(cursor):
             width, height = size
 
-            if(width > 256 or height > 256):
+            if width > 256 or height > 256:
                 continue
 
             hot_x, hot_y = cursor[size].hotspot
-            hot_x, hot_y = hot_x if (0 <= hot_x < width) else 0, hot_y if(0 <= hot_y < height) else 0
+            hot_x, hot_y = hot_x if (0 <= hot_x < width) else 0, hot_y if (0 <= hot_y < height) else 0
 
             image_data = cls._to_bmp(cursor[size].image, (width, height))
 
-            width, height = width if(width < 256) else 0, height if(height < 256) else 0
+            width, height = width if (width < 256) else 0, height if (height < 256) else 0
 
-            out.write(to_bytes(width, 1)) # Width, 1 byte.
-            out.write(to_bytes(height, 1)) # Height, 1 byte.
+            out.write(to_bytes(width, 1))  # Width, 1 byte.
+            out.write(to_bytes(height, 1))  # Height, 1 byte.
             out.write(b"\0\0")
             out.write(to_bytes(hot_x, 2))
             out.write(to_bytes(hot_y, 2))
