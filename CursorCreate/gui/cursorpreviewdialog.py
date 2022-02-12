@@ -1,5 +1,5 @@
 from PIL import ImageQt
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 from CursorCreate.lib import cursor_util
@@ -21,7 +21,7 @@ class CursorPreviewDialog(QtWidgets.QDialog):
         self._box = QtWidgets.QVBoxLayout()
         self._box.addWidget(self._preview_panel)
         self._frame.setLayout(self._box)
-        self._box.setMargin(0)
+        self._box.setContentsMargins(0, 0, 0, 0)
 
         self._viewers = []
 

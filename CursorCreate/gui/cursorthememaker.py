@@ -8,7 +8,7 @@ from typing import Any, Dict, Union
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorselector import CursorSelectWidget
 from CursorCreate.gui.layouts import FlowLayout

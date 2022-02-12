@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 from PIL import Image, ImageQt
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorpreviewdialog import CursorPreviewDialog
 from CursorCreate.gui.layouts import FlowLayout
@@ -135,7 +135,7 @@ class CursorEditWidget(QtWidgets.QFrame):
 
         self._frame = QtWidgets.QFrame()
         self._f_lay = QtWidgets.QVBoxLayout()
-        self._f_lay.setMargin(0)
+        self._f_lay.setContentsMargins(0, 0, 0, 0)
         self._f_lay.addWidget(self._hotspot_picker)
         self._frame.setLayout(self._f_lay)
         self._frame.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)

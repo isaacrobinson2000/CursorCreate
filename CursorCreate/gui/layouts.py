@@ -5,7 +5,7 @@ Link to original code: (https://github.com/pyside/Examples/blob/master/examples/
 Corrects a couple of incorrect imports and references, other then that not much...
 """
 
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 
 class FlowLayout(QtWidgets.QLayout):
@@ -13,7 +13,7 @@ class FlowLayout(QtWidgets.QLayout):
         super(FlowLayout, self).__init__(parent)
 
         if parent is not None:
-            self.setMargin(margin)
+            self.setContentsMargins(margin, margin, margin, margin)
 
         self.setSpacing(spacing)
 

@@ -2,9 +2,8 @@ from io import BytesIO
 from typing import BinaryIO
 from xml.etree import ElementTree
 
-import cairosvg
 from PIL import Image, ImageOps, ImageSequence
-
+import cairosvg
 from CursorCreate.lib import format_core
 from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 

@@ -1,5 +1,4 @@
 from pathlib import Path
-
 from setuptools import setup
 
 readme_file = Path(__file__).parent / "README.md"

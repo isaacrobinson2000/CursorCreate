@@ -3,7 +3,7 @@ from io import BytesIO
 from urllib.error import URLError
 from urllib.request import urlopen
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorviewedit import CursorViewEditWidget
 from CursorCreate.lib.cursor_util import load_cursor
@@ -29,7 +29,8 @@ class CursorSelectWidget(QtWidgets.QFrame):
         # Make a frame to wrap around the hotspot picker and add a border...
         self._frame = QtWidgets.QFrame()
         self._f_lay = QtWidgets.QVBoxLayout()
-        self._f_lay.setMargin(0)
+        # self._f_lay.setMargin(0)
+        self._f_lay.setContentsMargins(0, 0, 0, 0)
         self._f_lay.addWidget(self._viewer)
         self._frame.setLayout(self._f_lay)
         self._frame.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
