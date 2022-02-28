@@ -1,5 +1,4 @@
 black
-CairoSVG
 click
 numpy
 Pillow

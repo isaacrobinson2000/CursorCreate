@@ -1,95 +1,22 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
 from pathlib import Path
-import ctypes
 
 block_cipher = None
-
-
 spec_root = Path(SPECPATH).resolve()
-cairo_lib = ctypes.util.find_library("cairo")
 
-
-if(sys.platform.startswith("linux")):
-    icon = None
-    cairo_lib = Path("/usr/lib") / cairo_lib
-elif(sys.platform.startswith("darwin")):
-    icon = None
-    cairo_lib = Path(cairo_lib)
-elif(sys.platform.startswith("win32")):
+if(sys.platform.startswith("win")):
     icon = str(spec_root / "icon_windows.ico")
-    cairo_lib = Path(cairo_lib)
 else:
-    raise ValueError("Spec file doesn't support " + sys.platform)
-
-
-import cairocffi
-import cairosvg
-import cssselect2
-import tinycss2
-
-# We have to hack the cairocffi package to use the internally stored library...
-def hack_cairocffi(c_pkg):
-    init_path = Path(c_pkg.__file__)
-
-    with init_path.open() as rf:
-        data = rf.readlines()
-
-    for i, line in enumerate(data):
-        if(line.startswith("cairo")):
-            data[i + 2] = f"    (str(Path(__file__).parent / '{cairo_lib.name}'), 'libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll'))\n"
-
-    with init_path.open("w") as wf:
-        print(data)
-        wf.writelines(data)
-
-hack_cairocffi(cairocffi)
-
-def get_version_file(pkg):
-    return str((Path(pkg.__file__).resolve().parent) / "VERSION")
-
-datas = [
-    (get_version_file(cairocffi), "cairocffi"),
-    (get_version_file(cairosvg), "."),
-    (get_version_file(cssselect2), "cssselect2"),
-    (get_version_file(tinycss2), "tinycss2")
-]
-
-binaries = [
-    (str(cairo_lib), "cairocffi"),
-]
-
-if(sys.platform.startswith("darwin")):
-    libs = [
-        "libcairo.2",
-        "pixman-1.0", 
-        "fontconfig.1", 
-        "libpng16.16", 
-        "libz.1",
-        "libfreetype.6",
-        "libX11-xcb.1",
-        "libxcb.1",
-        "libxcb-render.0",
-        "libXrender.1",
-        "libX11.6",
-        "libXext.6",
-        "libuuid.16",
-        "libXau.6",
-        "libXdmcp.6"
-    ]
-    
-    f_lib = ctypes.util.find_library
-    binaries.extend([(f_lib(name), ".") for name in libs])
+    icon = None
 
 a = Analysis(
     ['CursorCreate/cursorcreate.py'],
     pathex = [str(spec_root)],
-    binaries = binaries,
-    datas = datas,
-    hiddenimports = ["pkg_resources.py2_warn"],
+    hiddenimports = [],
     hookspath = [],
     runtime_hooks = [],
-    excludes = [],
+    excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'],
     win_no_prefer_redirects = False,
     win_private_assemblies = False,
     cipher = block_cipher,

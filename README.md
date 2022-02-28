@@ -14,7 +14,7 @@ Releases Page:
 
 #### From PyPI:
 
-CursorCreate is also avaibable on PyPI. To install it, exectute one of the commands below:
+CursorCreate is also available on PyPI. To install it, execute one of the commands below:
 ```bash
 # For only command line support:
 pip install CursorCreate
@@ -31,19 +31,19 @@ CursorCreate --help
 
 #### From Source:
 
-To install CursorCreate from source, you will need the following dependencies:
- - CairoSVG
- - Pillow
- - numpy
- - PySide2
+To install CursorCreate from source, you will need the dependencies for 
+CursorCreate, which can be done using the requirements.txt as shown below:
+```bash
+pip install -r requirements.txt
+```
 
-Once all of these dependencies are installed in your python environment (using a virtual environment is recommended) you can pull down this repository using a git clone as below:
+Once all the dependencies are installed in your python environment (using a virtual environment is recommended) you can pull down this repository using a git clone as below:
 
 ```bash
 git clone https://github.com/isaacrobinson2000/CursorCreate.git
 ```
 
-If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment, and staticx installed on the global python environment if you plan on building on linux. Use the build scripts provided with this project, as the binary will not have all of the required files and dependencies packaged with it otherwise. 
+If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment, and staticx installed on the global python environment if you plan on building on linux. Use the build scripts provided with this project, as the binary will not have all the required files and dependencies packaged with it otherwise. 
 
 ### Example Theme
 

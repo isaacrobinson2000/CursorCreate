@@ -23,11 +23,8 @@ setup(
         ],
     },
     install_requires=[
-        "CairoSVG",
+        "PySide6",
         "Pillow",
         "numpy"
-    ],
-    extras_require={
-        "gui": ["PySide2"]
-    }
+    ]
 )

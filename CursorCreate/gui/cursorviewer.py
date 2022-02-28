@@ -70,7 +70,7 @@ class CursorDisplayWidget(QtWidgets.QWidget):
             self._imgs = [
                 QtGui.QPixmap(
                     QtGui.QImage(
-                        bytes(4 * self._size ** 2),
+                        bytes(4 * self._size**2),
                         self._size,
                         self._size,
                         4,

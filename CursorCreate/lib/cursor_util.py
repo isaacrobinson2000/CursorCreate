@@ -1,11 +1,13 @@
 from io import BytesIO
-from typing import BinaryIO
-from xml.etree import ElementTree
+from typing import BinaryIO, Tuple
 
 from PIL import Image, ImageOps, ImageSequence
-import cairosvg
 from CursorCreate.lib import format_core
 from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
+
+# New SVG Support...
+from PySide6 import QtWidgets, QtWebEngineWidgets, QtWebEngineCore, QtCore
+import base64
 
 # Some versions of pillow don't actually have this error, so just set this exception to the general case in this case.
 try:
@@ -68,6 +70,115 @@ def load_cursor_from_image(file: BinaryIO) -> AnimatedCursor:
     return final_cursor
 
 
+class _ChromiumSVGRenderer:
+    SVG_SIZE_SCRIPT = """
+    function get_svg_size() {{
+        let img_text = '{svg_text}';
+        let img = new Image();
+
+        img.onload = () => console.log([img.naturalWidth, img.naturalHeight]);
+        img.onerror = () => {{
+            throw "Invalid svg image!";
+        }};
+        img.src = 'data:image/svg+xml;base64,' + img_text;
+    }};
+
+    get_svg_size();
+    """.replace(
+        "\n    ", "\n"
+    )
+
+    SVG_RENDER_SCRIPT = """
+    function render_svg() {{
+        let img_text = '{svg_text}';
+        let img = new Image();
+
+        img.onload = () => {{
+            let c = document.createElement("canvas");
+            c.width = {width};
+            c.height = {height};
+            let painter = c.getContext('2d');
+            painter.drawImage(img, 0, 0, {width}, {height});
+            console.log(c.toDataURL().split(',')[1]);
+        }};
+        img.onerror = () => {{
+            throw "Invalid svg image!";
+        }};
+        img.src = 'data:image/svg+xml;base64,' + img_text;
+    }};
+    
+    render_svg();
+    """.replace(
+        "\n    ", "\n"
+    )
+
+    class DumpPage(QtWebEngineCore.QWebEnginePage):
+        JSMessageLevel = QtWebEngineCore.QWebEnginePage.JavaScriptConsoleMessageLevel
+
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            self.on_dump = None
+
+        def javaScriptConsoleMessage(
+            self, level: JSMessageLevel, message: str, line_number: int, source_id: str
+        ) -> None:
+            no_error = level == self.JSMessageLevel.InfoMessageLevel
+            if self.on_dump is not None:
+                self.on_dump(no_error, message)
+
+    def __init__(self, parent=None):
+        self._app = QtWidgets.QApplication.instance()
+        if self._app is None:
+            self._app = QtWidgets.QApplication([])
+
+        self._web_engine = QtWebEngineWidgets.QWebEngineView(parent)
+        self._page = self.DumpPage(self._web_engine)
+        self._web_engine.setPage(self._page)
+
+    @classmethod
+    def _load_file_b64(cls, file: BinaryIO) -> str:
+        file.seek(0)
+        return base64.b64encode(file.read()).decode()
+
+    def _run_script(self, script: str, **kwargs) -> str:
+        loop = QtCore.QEventLoop()
+        message = (False, "Could not load browser...")
+
+        def on_dump(no_error, msg):
+            nonlocal message
+            message = (no_error, msg)
+            loop.quit()
+
+        self._page.on_dump = on_dump
+        self._page.runJavaScript(script.format(**kwargs), 0)
+        loop.exec()
+
+        if not message[0]:
+            raise ValueError(f"Error while running script: {message[1]}")
+
+        return str(message[1])
+
+    def get_svg_size(self, file: BinaryIO) -> Tuple[int, int]:
+        res = self._run_script(self.SVG_SIZE_SCRIPT, svg_text=self._load_file_b64(file))
+        w, h = [int(v) for v in res.split(",")]
+        return (w, h)
+
+    def render_svg(self, file: BinaryIO, width: int, height: int) -> BinaryIO:
+        res = self._run_script(
+            self.SVG_RENDER_SCRIPT,
+            svg_text=self._load_file_b64(file),
+            width=width,
+            height=height,
+        )
+
+        return BytesIO(base64.b64decode(res.encode()))
+
+    def __del__(self):
+        self._web_engine.destroy()
+        del self._page
+        del self._web_engine
+
+
 def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
     """
     Load a cursor from an SVG. SVG is expected to be square. If it is not square, this method will slide
@@ -79,13 +190,11 @@ def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
     :return: An AnimatedCursor object, representing an animated cursor. Static cursors will only have 1 frame.
     """
     # Convert SVG in memory to PNG, and read that in with PIL to get the default size of the SVG...
-    mem_png = BytesIO()
-    cairosvg.svg2png(file_obj=file, write_to=mem_png)
-    file.seek(0)
-    size_ref_img = Image.open(mem_png)
+    svg_renderer = _ChromiumSVGRenderer()
+    w, h = svg_renderer.get_svg_size(file)
 
     # Compute height to width ratio an the number of frame(Assumes they are stored horizontally)...
-    h_to_w_multiplier = size_ref_img.size[0] / size_ref_img.size[1]
+    h_to_w_multiplier = w / h
     num_frames = int(h_to_w_multiplier)
 
     if num_frames == 0:
@@ -98,14 +207,9 @@ def load_cursor_from_svg(file: BinaryIO) -> AnimatedCursor:
 
     for sizes in DEFAULT_SIZES:
         # For each default size, resize svg to it and add all frames to the AnimatedCursor object...
-        image = BytesIO()
-        cairosvg.svg2png(
-            file_obj=file,
-            write_to=image,
-            output_height=sizes[1],
-            output_width=int(sizes[1] * h_to_w_multiplier),
+        image = svg_renderer.render_svg(
+            file, int(sizes[1] * h_to_w_multiplier), sizes[1]
         )
-        file.seek(0)
         image = Image.open(image)
 
         height = image.size[1]
@@ -173,5 +277,5 @@ def load_cursor(file: BinaryIO):
             file.seek(0)
             try:
                 return load_cursor_from_svg(file)
-            except ElementTree.ParseError:
+            except ValueError:
                 raise ValueError("Unable to open file by any specified methods...")
