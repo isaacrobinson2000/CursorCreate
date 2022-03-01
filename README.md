@@ -14,12 +14,9 @@ Releases Page:
 
 #### From PyPI:
 
-CursorCreate is also available on PyPI. To install it, execute one of the commands below:
+CursorCreate is also available on PyPI. To install it, execute the command below:
 ```bash
-# For only command line support:
 pip install CursorCreate
-# For additional GUI support:
-pip install CursorCreate[gui]
 ```
 Once it is installed, it can be executed using the `CursorCreate` command in the shell:
 ```bash
@@ -43,7 +40,7 @@ Once all the dependencies are installed in your python environment (using a virt
 git clone https://github.com/isaacrobinson2000/CursorCreate.git
 ```
 
-If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment, and staticx installed on the global python environment if you plan on building on linux. Use the build scripts provided with this project, as the binary will not have all the required files and dependencies packaged with it otherwise. 
+If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment. Use the build scripts provided with this project, as the binary will not have all the required files and dependencies packaged with it otherwise. 
 
 ### Example Theme
 
