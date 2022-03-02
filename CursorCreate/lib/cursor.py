@@ -4,7 +4,6 @@ Provides core objects or data types for manipulating cursor data, including imag
 """
 
 from typing import Iterable, Iterator, Tuple, Union
-
 from PIL import Image, ImageOps
 
 
@@ -66,7 +65,7 @@ class Cursor:
         """
         Construct a new cursor.
 
-        :param cursors: Optional, a iterable of CursorIcons of which to initialize this cursor with
+        :param cursors: Optional, an iterable of CursorIcons of which to initialize this cursor with
         """
         self._curs = {}
         if cursors is not None:

@@ -3,3 +3,7 @@ __pycache__/
 build/
 dist/
 .idea
+# Nuitka stuff...
+cursorcreate.dist
+cursorcreate.build
+cursorcreate.bin

@@ -27,7 +27,7 @@ def build_theme(
     :param directory: The directory to build the new theme in.
     :param metadata: A dictionary of string to any(mostly string) stores "author", and "licence".
     :param cursor_dict: A dictionary of cursor name(string) to AnimatedCursor, specifying cursors and the types they
-                        are suppose to be. Look at the 'DEFAULT_CURSORS' class variable in the CursorThemeBuilder
+                        are supposed to be. Look at the 'DEFAULT_CURSORS' class variable in the CursorThemeBuilder
                         class to see all valid types which a theme builder will accept...
     """
     build_theme_in = directory / theme_name
@@ -198,8 +198,9 @@ def load_project(
 
             for hotspot, (sub_cursor, delay) in zip(cursor_info["hotspots_64"], cursor):
                 for size in sub_cursor:
-                    x_hot, y_hot = int((size[0] / 64) * hotspot[0]), int(
-                        (size[1] / 64) * hotspot[1]
+                    x_hot, y_hot = (
+                        int((size[0] / 64) * hotspot[0]),
+                        int((size[1] / 64) * hotspot[1])
                     )
                     sub_cursor[size].hotspot = (x_hot, y_hot)
 
