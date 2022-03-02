@@ -1,2 +1,1 @@
-pyinstaller CursorCreate.spec --clean
-staticx dist/CursorCreate dist/CursorCreate
+python -m nuitka --standalone --onefile --linux-onefile-icon=icon_linux.xpm --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py

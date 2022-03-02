@@ -1,1 +1,1 @@
-pyinstaller CursorCreate.spec --clean
+python -m nuitka --standalone --onefile --macos-onefile-icon=icon_mac.icns --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py

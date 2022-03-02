@@ -40,7 +40,7 @@ Once all the dependencies are installed in your python environment (using a virt
 git clone https://github.com/isaacrobinson2000/CursorCreate.git
 ```
 
-If you are attempting to package CursorCreate for your platform, you will need PyInstaller installed to the virtual environment. Use the build scripts provided with this project, as the binary will not have all the required files and dependencies packaged with it otherwise. 
+If you are attempting to package CursorCreate for your platform, you will need nuitka installed to the virtual environment. Use the build scripts provided with this project (`build_windows.bat`, `build_linux.sh`, or `build_mac.sh`), as the scripts provide flags for including all the dependencies and making the executables standalone. 
 
 ### Example Theme
 
