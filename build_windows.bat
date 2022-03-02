@@ -1,1 +1,1 @@
-python -m nuitka --standalone --onefile --windows-icon-from-ico=icon_windows.ico --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py
+python -m nuitka --standalone --onefile --windows-disable-console --windows-icon-from-ico=icon_windows.ico --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py

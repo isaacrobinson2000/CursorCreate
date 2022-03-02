@@ -1,1 +1,1 @@
-python -m nuitka --standalone --onefile --macos-onefile-icon=icon_mac.icns --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py
+python -m nuitka --standalone --onefile  --macos-disable-console --macos-onefile-icon=icon_mac.icns --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py
