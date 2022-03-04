@@ -8,11 +8,12 @@ from CursorCreate.gui.cursorpreviewdialog import CursorPreviewDialog
 from CursorCreate.gui.layouts import FlowLayout
 from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 
+Signal = getattr(QtCore, "Signal", getattr(QtCore, "pyqtSignal", None))
 
 class CursorHotspotWidget(QtWidgets.QWidget):
     VIEW_SIZE = (64, 64)
 
-    userHotspotChange = QtCore.Signal((int, int))
+    userHotspotChange = Signal((int, int))
 
     def __init__(
         self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs
@@ -119,8 +120,8 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
 
 class CursorEditWidget(QtWidgets.QFrame):
-    userDelayChange = QtCore.Signal((int,))
-    userHotspotChange = QtCore.Signal((int, int))
+    userDelayChange = Signal((int,))
+    userHotspotChange = Signal((int, int))
 
     def __init__(
         self, parent=None, cursor: AnimatedCursor = None, frame=0, *args, **kwargs
