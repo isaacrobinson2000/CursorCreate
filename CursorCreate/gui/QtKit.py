@@ -6,7 +6,8 @@ _QT_IMPL = None
 for impl_name in _QT_Implementations:
     try:
         _QT_IMPL = __import__(impl_name, globals(), locals(), [], 0)
-        continue
+        __name__ = impl_name
+        break
     except ImportError:
         pass
 
