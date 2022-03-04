@@ -7,6 +7,8 @@ from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 
 # New SVG Support...
 from CursorCreate.gui.QtKit import QtWidgets, QtWebEngineWidgets, QtWebEngineCore, QtCore
+if(not hasattr(QtWebEngineCore, "QWebEnginePage")):
+    QtWebEngineCore.QWebEnginePage = QtWebEngineWidgets.QWebEnginePage
 import base64
 
 # Some versions of pillow don't actually have this error, so just set this exception to the general case in this case.
