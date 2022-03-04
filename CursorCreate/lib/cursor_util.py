@@ -7,6 +7,7 @@ from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 
 # New SVG Support...
 from CursorCreate.gui.QtKit import QtWidgets, QtWebEngineWidgets, QtWebEngineCore, QtCore
+# Qt5 Fix...
 if(not hasattr(QtWebEngineCore, "QWebEnginePage")):
     QtWebEngineCore.QWebEnginePage = QtWebEngineWidgets.QWebEnginePage
 import base64
