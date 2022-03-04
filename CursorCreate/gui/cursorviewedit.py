@@ -16,6 +16,6 @@ class CursorViewEditWidget(CursorDisplayWidget):
             self._pressed = False
             if self.current_cursor is not None:
                 mod_hotspot = HotspotEditDialog(self.window(), self.current_cursor)
-                mod_hotspot.exec()
+                mod_hotspot.exec_()
                 self.current_cursor = self.current_cursor
                 del mod_hotspot

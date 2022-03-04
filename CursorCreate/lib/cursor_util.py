@@ -153,7 +153,7 @@ class _ChromiumSVGRenderer:
 
         self._page.on_dump = on_dump
         self._page.runJavaScript(script.format(**kwargs), 0)
-        loop.exec()
+        loop.exec_()
 
         if not message[0]:
             raise ValueError(f"Error while running script: {message[1]}")
