@@ -1,5 +1,5 @@
 from PIL import ImageQt
-from PySide6 import QtCore, QtGui, QtWidgets
+from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 from CursorCreate.lib import cursor_util

@@ -1,4 +1,4 @@
-from PySide6 import QtGui
+from CursorCreate.gui.QtKit import QtGui
 from CursorCreate.gui.cursorhotspotedit import HotspotEditDialog
 from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 

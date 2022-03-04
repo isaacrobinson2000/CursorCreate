@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 from PIL import Image, ImageQt
-from PySide6 import QtCore, QtGui, QtWidgets
+from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorpreviewdialog import CursorPreviewDialog
 from CursorCreate.gui.layouts import FlowLayout

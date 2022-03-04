@@ -5,7 +5,7 @@ Link to original code: (https://github.com/pyside/Examples/blob/master/examples/
 Corrects a couple of incorrect imports and references, other then that not much...
 """
 
-from PySide6 import QtCore, QtWidgets
+from CursorCreate.gui.QtKit import QtCore, QtWidgets
 
 
 class FlowLayout(QtWidgets.QLayout):

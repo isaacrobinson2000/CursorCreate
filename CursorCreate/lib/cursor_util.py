@@ -6,7 +6,7 @@ from CursorCreate.lib import format_core
 from CursorCreate.lib.cursor import AnimatedCursor, Cursor, CursorIcon
 
 # New SVG Support...
-from PySide6 import QtWidgets, QtWebEngineWidgets, QtWebEngineCore, QtCore
+from CursorCreate.gui.QtKit import QtWidgets, QtWebEngineWidgets, QtWebEngineCore, QtCore
 import base64
 
 # Some versions of pillow don't actually have this error, so just set this exception to the general case in this case.

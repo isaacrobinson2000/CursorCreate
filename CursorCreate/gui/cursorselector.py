@@ -3,7 +3,7 @@ from io import BytesIO
 from urllib.error import URLError
 from urllib.request import urlopen
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorviewedit import CursorViewEditWidget
 from CursorCreate.lib.cursor_util import load_cursor
