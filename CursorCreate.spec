@@ -17,7 +17,7 @@ if(sys.platform.startswith("darwin")):
 
     datas = [
         (str(resource_folder / "icudtl.dat"), "PySide6/Qt/"),
-        (str(resource_folder / "qtwebengine_resources.pak", "PySide6/Qt/")
+        (str(resource_folder / "qtwebengine_resources.pak"), "PySide6/Qt/")
     ]
 else:
     datas = None
