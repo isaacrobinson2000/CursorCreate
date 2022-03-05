@@ -10,10 +10,23 @@ if(sys.platform.startswith("win")):
 else:
     icon = None
 
+if(sys.platform.startswith("darwin")):
+    from glob import glob
+
+    resource_folder = Path(glob(str(spec_root / "venv/lib/python*/site-packages/PySide6/Qt/lib/QtWebEngineCore.framework/Resources"))[0])
+
+    datas = [
+        (str(resource_folder / "icudtl.dat"), "PySide6/Qt/"),
+        (str(resource_folder / "qtwebengine_resources.pak", "PySide6/Qt/")
+    ]
+else:
+    datas = None
+
 a = Analysis(
     ['CursorCreate/cursorcreate.py'],
     pathex = [str(spec_root)],
     hiddenimports = [],
+    datas=datas,
     hookspath = [],
     runtime_hooks = [],
     excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'],
