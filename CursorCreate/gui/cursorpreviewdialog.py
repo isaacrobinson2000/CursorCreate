@@ -1,8 +1,5 @@
-from PIL import ImageQt
 from PIL.ImageQt import toqpixmap
-
 from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
-
 from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 from CursorCreate.lib import cursor_util
 from CursorCreate.lib.cursor import AnimatedCursor
