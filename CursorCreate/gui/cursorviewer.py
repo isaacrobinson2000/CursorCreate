@@ -1,4 +1,4 @@
-from PIL.ImageQt import ImageQt
+from PIL.ImageQt import toqpixmap
 from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
 
 from CursorCreate.lib.cursor import AnimatedCursor
@@ -59,7 +59,7 @@ class CursorDisplayWidget(QtWidgets.QWidget):
         if cursor is not None and (len(cursor) > 0):
             self._cur.normalize([(self._size, self._size)])
             self._imgs = [
-                QtGui.QPixmap(ImageQt(cur[(self._size, self._size)].image))
+                toqpixmap(cur[(self._size, self._size)].image)
                 for cur, delay in cursor
             ]
             self._delays = [delay for cur, delay in cursor]

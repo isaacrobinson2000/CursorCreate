@@ -1,7 +1,9 @@
 from typing import Tuple
 
 import numpy as np
-from PIL import Image, ImageQt
+from PIL import Image
+from PIL.ImageQt import toqpixmap
+
 from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorpreviewdialog import CursorPreviewDialog
@@ -84,8 +86,8 @@ class CursorHotspotWidget(QtWidgets.QWidget):
     def frame(self, value: int):
         if 0 <= value < len(self._cursor):
             self._frame = value
-            self._frame_img = QtGui.QPixmap(
-                ImageQt.ImageQt(self._cursor[self._frame][0][self.VIEW_SIZE].image)
+            self._frame_img = toqpixmap(
+                self._cursor[self._frame][0][self.VIEW_SIZE].image
             )
             self.update()
         else:

@@ -1,4 +1,6 @@
 from PIL import ImageQt
+from PIL.ImageQt import toqpixmap
+
 from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorviewer import CursorDisplayWidget
@@ -58,7 +60,7 @@ class PreviewArea(QtWidgets.QWidget):
         super().__init__(parent)
         self._core_painter = QtGui.QPainter()
         self._pixmaps = [
-            QtGui.QPixmap(ImageQt.ImageQt(sub_cur[self.CURSOR_SIZE].image))
+            toqpixmap(sub_cur[self.CURSOR_SIZE].image)
             for sub_cur, delay in cursor
         ]
         self._hotspots = [

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 from PIL import Image
-from PIL.ImageQt import ImageQt
+from PIL.ImageQt import toqpixmap
 from CursorCreate.gui.QtKit import QtCore, QtGui, QtWidgets
 
 from CursorCreate.gui.cursorselector import CursorSelectWidget
@@ -66,7 +66,7 @@ class CursorThemeMaker(QtWidgets.QWidget):
         mem_icon = BytesIO(base64.b64decode(ICON))
 
         self.setWindowTitle("Cursor Theme Builder")
-        self.setWindowIcon(QtGui.QIcon(QtGui.QPixmap(ImageQt(Image.open(mem_icon)))))
+        self.setWindowIcon(QtGui.QIcon(toqpixmap(Image.open(mem_icon))))
 
         self._open_build_project = None
 
