@@ -12,7 +12,9 @@ if(sys.platform.startswith("win")):
 elif(sys.platform.startswith("linux")):
     command = "python -m nuitka --standalone --onefile --linux-onefile-icon=icon_linux.xpm --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py"
 elif(sys.platform.startswith("darwin")):
-    command = "python -m nuitka --standalone --onefile --macos-create-app-bundle --macos-disable-console --macos-onefile-icon=icon_mac.icns --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py"
+    # Would be nice to use nuitka at some point...
+    # command = "python -m nuitka --standalone --onefile --macos-create-app-bundle --macos-disable-console --macos-onefile-icon=icon_mac.icns --enable-plugin=pyside6 --enable-plugin=numpy CursorCreate/cursorcreate.py"
+    command = "pyinstaller CursorCreate.spec"
 else:
     raise EnvironmentError(f"Unsupported Platform: {sys.platform}")
 
