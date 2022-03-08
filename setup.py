@@ -7,7 +7,7 @@ with readme_file.open("r") as f:
 
 setup(
     name="CursorCreate",
-    version="1.3.1",
+    version="1.4.0",
     packages=["CursorCreate", "CursorCreate.gui", "CursorCreate.lib"],
     url="https://github.com/isaacrobinson2000/CursorCreate",
     license="GPLv3",
