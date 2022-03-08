@@ -1,4 +1,4 @@
-from CursorCreate.gui.QtKit import QtGui
+from CursorCreate.gui.QtKit import QtGui, QtCore
 from CursorCreate.gui.cursorhotspotedit import HotspotEditDialog
 from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 
@@ -6,7 +6,7 @@ from CursorCreate.gui.cursorviewer import CursorDisplayWidget
 class CursorViewEditWidget(CursorDisplayWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setCursor(QtGui.Qt.PointingHandCursor)
+        self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         self._pressed = True

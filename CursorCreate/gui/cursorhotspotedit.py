@@ -35,7 +35,7 @@ class CursorHotspotWidget(QtWidgets.QWidget):
 
         self.__painter = QtGui.QPainter()
         self.frame = frame
-        self.setCursor(QtGui.Qt.CrossCursor)
+        self.setCursor(QtCore.Qt.CrossCursor)
 
         self.setMinimumSize(QtCore.QSize(*self.VIEW_SIZE))
         self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
