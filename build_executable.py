@@ -1,6 +1,9 @@
 import subprocess
 import os
 import sys
+from pathlib import Path
+
+script_folder = Path(__file__).resolve().parent
 
 env = os.environ.copy()
 # Import QtKit to figure out what Qt library is being used...
@@ -20,4 +23,4 @@ else:
 
 # Run the command...
 print("Building an executable...")
-process = subprocess.run(command, env=env)
+process = subprocess.run(command.split(), env=env, cwd=script_folder)
