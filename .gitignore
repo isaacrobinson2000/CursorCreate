@@ -7,3 +7,5 @@ dist/
 cursorcreate.dist
 cursorcreate.build
 cursorcreate.bin
+# PyPI Build Stuff...
+CursorCreate.egg-info/
